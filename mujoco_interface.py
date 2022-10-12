@@ -30,6 +30,7 @@ class Mujoco(Interface):
         dt=0.001,
         visualize=True,
         create_offscreen_rendercontext=False,
+        on_step=None,
     ):
 
         super().__init__(robot_config)
@@ -45,6 +46,10 @@ class Mujoco(Interface):
         self.visualize = visualize
         # if we want the offscreen render context
         self.create_offscreen_rendercontext = create_offscreen_rendercontext
+
+        # function to call on sim step
+        # should take this interface as an argument
+        self.on_step = on_step
 
     def connect(self, joint_names=None, camera_id=-1, **kwargs):
         """
@@ -239,6 +244,10 @@ class Mujoco(Interface):
 
         if self.visualize and update_display:
             self.viewer.render()
+        
+        if self.on_step:
+            self.on_step(self)
+
         self.count += self.dt
 
     def set_external_force(self, name, u_ext):

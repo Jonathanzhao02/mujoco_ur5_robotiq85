@@ -44,7 +44,7 @@ class MoveTo(Action):
         while True:
 
             # Check Window
-            if self.interface.viewer.exit:
+            if self.interface.visualize and self.interface.viewer.exit:
                 glfw.destroy_window(self.interface.viewer.window)
                 break
 
@@ -64,7 +64,7 @@ class MoveTo(Action):
                 u = self.gripper_control_func(u, self._gripper)
 
             # send forces into Mujoco, step the sim forward
-            self.interface.send_forces(u)
+            self.interface.send_forces(u, update_display=True)
 
             # calculate time step
             time_step += 1

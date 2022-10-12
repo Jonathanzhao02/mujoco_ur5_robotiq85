@@ -90,7 +90,8 @@ class Executor:
         self.gripper = GripperStatus(start_gripper_status)
 
     def append(self, action):
-        action._set_gripper(self.gripper)
+        if hasattr(action, '_set_gripper'):
+            action._set_gripper(self.gripper)
         self.action_list.append(action)
 
     def execute(self):

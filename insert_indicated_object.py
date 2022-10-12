@@ -7,20 +7,10 @@ if __name__ == '__main__':
     from mujoco_interface import Mujoco
     from abr_control.utils import transformations
     from my_mujoco_config import MujocoConfig as arm
+    from parse_xml import parse_xml
+    from pathlib import Path
 
     import matplotlib.pyplot as plt
-
-    def gripper_control_func_factory(force=None):
-        def _gripper_control_func(u, gripper):
-            if force is not None:
-                gripper.set_gripper_status(force)
-            u[-1] = gripper.get_gripper_status()
-            return u
-        return _gripper_control_func
-    
-    gripper_idle_func = gripper_control_func_factory()
-    gripper_open_func = gripper_control_func_factory(-0.1)
-    gripper_close_func = gripper_control_func_factory(0.1)
 
     obj_names = [
         'container',
@@ -58,6 +48,14 @@ if __name__ == '__main__':
 
         print(f'got state {cnt}')
         cnt += 1
+    
+    gen_colors, gen_sizes, gen_scales = parse_xml(
+        Path('my_models/ur5_robotiq85/ur5_topdown_template.xml'),
+        '__template',
+        Path('my_models/ur5_robotiq85/ur5_topdown.xml')
+    )
+
+    print(gen_colors, gen_sizes, gen_scales)
 
     # create our Mujoco interface
     robot_config = arm('ur5_topdown.xml', folder='./my_models/ur5_robotiq85')
@@ -112,11 +110,31 @@ if __name__ == '__main__':
     e = Executor(interface, robot_config.START_ANGLES, -0.05)
 
     from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover
-    stack(e, interface, ctrlr, target_name='mug_3', container_name='bowl_3', pickup_dz=0.06, pickup_dx=0.04, place_dz=0.1, place_dx=0.04, theta=0, rot_time=0, grip_time=50, grip_force=0.12, terminator=False)
+
+    mug_scale = gen_scales['mug_mesh']
+    mug_color3 = gen_colors['mug_3']
+    mug_color2 = gen_colors['mug_2']
+    mug_color1 = gen_colors['mug']
+
+    bowl_scale = gen_scales['bowl_mesh']
+    bowl_color = gen_colors['bowl_3']
+
+    class PrintAction(Action):
+        def __init__(self, interface, controller, sentence):
+            super().__init__(interface, controller)
+            self.sentence = sentence
+        
+        def execute(self):
+            print(self.sentence)
+
+    e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color3[0]} mug on the {bowl_scale[0]} {bowl_color[0]} bowl'))
+    stack(e, interface, ctrlr, target_name='mug_3', container_name='bowl_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.1, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
     move(e, interface, ctrlr, dz=0.1, terminator=False)
-    stack(e, interface, ctrlr, target_name='mug_2', container_name='mug_3', pickup_dz=0.06, pickup_dx=0.04, place_dz=0.15, place_dx=0.04, theta=0, rot_time=0, grip_time=50, grip_force=0.12, terminator=False)
+    e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color2[0]} mug on the {mug_scale[0]} {mug_color3[0]} mug'))
+    stack(e, interface, ctrlr, target_name='mug_2', container_name='mug_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.15, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
     move(e, interface, ctrlr, dz=0.1, terminator=False)
-    stack(e, interface, ctrlr, target_name='mug', container_name='mug_2', pickup_dz=0.06, pickup_dx=0.04, place_dz=0.15, place_dx=0.04, theta=0, rot_time=0, grip_time=50, grip_force=0.12, terminator=False)
+    e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color1[0]} mug on the {mug_scale[0]} {mug_color2[0]} mug'))
+    stack(e, interface, ctrlr, target_name='mug', container_name='mug_2', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.15, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
     move(e, interface, ctrlr, dz=0.1, terminator=True)
 
     e.execute()

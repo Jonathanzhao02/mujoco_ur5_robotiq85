@@ -89,5 +89,10 @@ class Recorder():
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            self._f.attrs['final_timestep'] = self.cnt
+        except:
+            pass
+        
         self._f.close()
         return False

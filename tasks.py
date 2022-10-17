@@ -5,6 +5,7 @@ import math
 ROT_TIME = 400
 GRIP_FORCE = 0.2
 GRIP_TIME = 25
+TERMINATOR_TIME = 100
 
 class StaticPosition:
     def __init__(self, interface, obj_name):
@@ -73,7 +74,7 @@ def move(executor, interface, controller, dx=0, dy=0, dz=0, terminator=False, on
     gripper_idle_func = gripper_control_func_factory()
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=10000, on_finish=on_finish))
+        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
     else:
         executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
 
@@ -92,7 +93,7 @@ def push(executor, interface, controller, target_name, theta=0, grip_force=GRIP_
     executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02))
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=10000, on_finish=on_finish))
+        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
     else:
         executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
 
@@ -112,7 +113,7 @@ def pick_up(executor, interface, controller, target_name, theta=0, dx=0, dy=0, d
     executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02))
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=10000, on_finish=on_finish))
+        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
     else:
         executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=rot_time, on_finish=on_finish))
 
@@ -143,7 +144,7 @@ def place(executor, interface, controller, target_name=None, target_pos=None, dx
     executor.append(MoveTo(interface, controller, target_func_2, gripper_open_func, time_limit=grip_time))
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, time_limit=10000, on_finish=on_finish))
+        executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
     else:
         executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
 
@@ -152,7 +153,7 @@ def rotate(executor, interface, controller, theta=0, rot_time=ROT_TIME, terminat
     gripper_idle_func = gripper_control_func_factory()
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=10000, on_finish=on_finish))
+        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
     else:
         executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=rot_time, on_finish=on_finish))
 

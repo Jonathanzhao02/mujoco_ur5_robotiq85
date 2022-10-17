@@ -66,8 +66,6 @@ if __name__ == '__main__':
     from parse_xml import parse_xml
     from pathlib import Path
 
-    import matplotlib.pyplot as plt
-
     objs = [
         'bowl_3',
         'mug_3',
@@ -97,7 +95,7 @@ if __name__ == '__main__':
     ) as recorder:
         # create our Mujoco interface
         robot_config = arm('ur5_tabletop.xml', folder='./my_models/ur5_robotiq85')
-        interface = Mujoco(robot_config, dt=0.008, on_step=recorder.record)
+        interface = Mujoco(robot_config, dt=0.008, on_step=None)
         interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
         random_place(interface, objs)
         
@@ -116,7 +114,7 @@ if __name__ == '__main__':
 
         e = Executor(interface, robot_config.START_ANGLES, -0.05)
 
-        from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover
+        from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover, idle
 
         mug_scale = gen_scales['mug_mesh']
         mug_color3 = gen_colors['mug_3']

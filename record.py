@@ -6,7 +6,7 @@ targets_type = np.dtype([('obj1', 'S64'), ('obj2', 'S64'), ('pos', '<f4', 3), ('
 objective_type = np.dtype([('timestep', 'uint'), ('action', 'S64'), ('targets', targets_type)])
 
 class Recorder():
-    def __init__(self, obj_names, gen_attrs, out_fname, dof=7, objective=None, width=255, height=255, max_timesteps=5000):
+    def __init__(self, obj_names, gen_attrs, out_fname, dof=7, objective=None, width=255, height=255, max_timesteps=2000):
         self.obj_names = ['EE'] + obj_names
         self.gen_attrs = gen_attrs
         self.out_fname = out_fname
@@ -30,7 +30,7 @@ class Recorder():
             self.objective_data = self._f.create_dataset('objective', shape=(0), maxshape=(max_timesteps), dtype=objective_type, chunks=True)
             self.q_data = self._f.create_dataset('q', shape=(max_timesteps, dof), dtype='<f4')
             self.dq_data = self._f.create_dataset('dq', shape=(max_timesteps, dof), dtype='<f4')
-            self.img_data = self._f.create_dataset('img', shape=(max_timesteps, width, height, 3), dtype='<f4')
+            self.img_data = self._f.create_dataset('img', shape=(max_timesteps, width, height, 3), dtype='<B')
             self.pos_data = self._f.create_dataset('pos', shape=(max_timesteps, len(self.obj_names), 3), dtype='<f4')
             self.rot_data = self._f.create_dataset('rot', shape=(max_timesteps, len(self.obj_names), 3), dtype='<f4')
             self._f.attrs['success'] = True
@@ -49,9 +49,9 @@ class Recorder():
             self.q_data[self.cnt] = feedback['q']
             self.dq_data[self.cnt] = feedback['dq']
 
-            img = interface.sim.render(self.width,self.height,camera_name='111').astype('<f4')
+            img = interface.sim.render(self.width,self.height,camera_name='111').astype('<B')
             while img.sum() == 0:
-                img = interface.sim.render(self.width,self.height,camera_name='111').astype('<f4')
+                img = interface.sim.render(self.width,self.height,camera_name='111').astype('<B')
             self.img_data[self.cnt] = img
 
             pos = np.empty((len(self.obj_names), 3), dtype='<f4')

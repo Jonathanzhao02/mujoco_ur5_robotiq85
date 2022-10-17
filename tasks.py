@@ -69,14 +69,19 @@ def gripper_control_func_factory(force=None):
         return u
     return _gripper_control_func
 
-def move(executor, interface, controller, dx=0, dy=0, dz=0, terminator=False, on_finish=None):
+def move(executor, interface, controller, dx=0, dy=0, dz=0, time_limit=None, terminator=False, on_finish=None):
     target_func = target_func_factory(interface, obj_pos=StaticPosition(interface, 'EE'), dx=dx, dy=dy, dz=dz, rx=-1.57, ry=0, rz=-1.57)
     gripper_idle_func = gripper_control_func_factory()
 
     if terminator:
         executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
-    else:
+    elif time_limit is None:
         executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
+    else:
+        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=time_limit, on_finish=on_finish))
+
+def idle(executor, interface, controller, time=100, terminator=False, on_finish=None):
+    move(executor, interface, controller, time_limit=time, terminator=terminator, on_finish=on_finish)
 
 def push(executor, interface, controller, target_name, theta=0, grip_force=GRIP_FORCE, terminator=False, on_finish=None):
     target_func = target_func_factory(interface, obj_pos=DynamicPosition(interface, target_name), dz=0.15, dx=math.sin(theta) / 8, dy=-math.cos(theta) / 8, rx=-1.57, ry=0, rz=-1.57)

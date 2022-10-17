@@ -81,58 +81,59 @@ if __name__ == '__main__':
         Path('my_models/ur5_robotiq85/ur5_tabletop.xml')
     )
 
-    recorder = Recorder(objs, {
-        'action': 'stack',
-        'targets': {
-            'bottom': 'bowl_3',
-            'top': 'mug_3'
+    with Recorder(objs, {
+            'color': {obj: gen_colors[obj] if obj in gen_colors.keys() else None for obj in objs},
+            'size': {obj: gen_sizes[obj] if obj in gen_sizes.keys() else None for obj in objs},
+            'scale': {obj: gen_scales[obj] if obj in gen_scales.keys() else None for obj in objs}
+        },
+        'demo.data',
+        objective={
+            'action': 'stack',
+            'targets': {
+                'obj1': 'bowl_3',
+                'obj2': 'mug_3'
+            }
         }
-    },
-    {
-        'color': {obj: gen_colors[obj] if obj in gen_colors.keys() else None for obj in objs},
-        'size': {obj: gen_sizes[obj] if obj in gen_sizes.keys() else None for obj in objs},
-        'scale': {obj: gen_scales[obj] if obj in gen_scales.keys() else None for obj in objs}
-    })
+    ) as recorder:
+        # create our Mujoco interface
+        robot_config = arm('ur5_tabletop.xml', folder='./my_models/ur5_robotiq85')
+        interface = Mujoco(robot_config, dt=0.008, on_step=recorder.record)
+        interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
+        random_place(interface, objs)
+        
+        # damp the movements of the arm
+        damping = Damping(robot_config, kv=10)
+        # instantiate controller
+        ctrlr = OSC(
+            robot_config,
+            kp=200,
+            null_controllers=[damping],
+            vmax=[0.5, 0.5],  # [m/s, rad/s]
+            # control (x, y, z) out of [x, y, z, alpha, beta, gamma]
+            ctrlr_dof=[True, True, True, True, True, True],
+            orientation_algorithm=1,
+        )
 
-    # create our Mujoco interface
-    robot_config = arm('ur5_tabletop.xml', folder='./my_models/ur5_robotiq85')
-    interface = Mujoco(robot_config, dt=0.008, on_step=recorder.record)
-    interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
-    random_place(interface, objs)
-    
-    # damp the movements of the arm
-    damping = Damping(robot_config, kv=10)
-    # instantiate controller
-    ctrlr = OSC(
-        robot_config,
-        kp=200,
-        null_controllers=[damping],
-        vmax=[0.5, 0.5],  # [m/s, rad/s]
-        # control (x, y, z) out of [x, y, z, alpha, beta, gamma]
-        ctrlr_dof=[True, True, True, True, True, True],
-        orientation_algorithm=1,
-    )
+        e = Executor(interface, robot_config.START_ANGLES, -0.05)
 
-    e = Executor(interface, robot_config.START_ANGLES, -0.05)
+        from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover
 
-    from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover
+        mug_scale = gen_scales['mug_mesh']
+        mug_color3 = gen_colors['mug_3']
+        mug_color2 = gen_colors['mug_2']
+        mug_color1 = gen_colors['mug']
 
-    mug_scale = gen_scales['mug_mesh']
-    mug_color3 = gen_colors['mug_3']
-    mug_color2 = gen_colors['mug_2']
-    mug_color1 = gen_colors['mug']
+        bowl_scale = gen_scales['bowl_mesh']
+        bowl_color = gen_colors['bowl_3']
 
-    bowl_scale = gen_scales['bowl_mesh']
-    bowl_color = gen_colors['bowl_3']
+        # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color3[0]} mug on the {bowl_scale[0]} {bowl_color[0]} bowl'))
+        stack(e, interface, ctrlr, target_name='mug_3', container_name='bowl_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.1, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
+        move(e, interface, ctrlr, dz=0.1, terminator=False, on_finish=change_objective(recorder, 'cover', { 'bottom': 'mug_3', 'top': 'mug_2' }))
+        # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color2[0]} mug on the {mug_scale[0]} {mug_color3[0]} mug'))
+        stack(e, interface, ctrlr, target_name='mug_2', container_name='mug_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.15, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
+        move(e, interface, ctrlr, dz=0.1, terminator=False, on_finish=change_objective(recorder, 'cover', { 'bottom': 'mug_2', 'top': 'mug' }))
+        # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color1[0]} mug on the {mug_scale[0]} {mug_color2[0]} mug'))
+        stack(e, interface, ctrlr, target_name='mug', container_name='mug_2', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.15, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
+        move(e, interface, ctrlr, dz=0.1, terminator=True)
 
-    # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color3[0]} mug on the {bowl_scale[0]} {bowl_color[0]} bowl'))
-    stack(e, interface, ctrlr, target_name='mug_3', container_name='bowl_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.1, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
-    move(e, interface, ctrlr, dz=0.1, terminator=False, on_finish=change_objective(recorder, 'cover', { 'bottom': 'mug_3', 'top': 'mug_2' }))
-    # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color2[0]} mug on the {mug_scale[0]} {mug_color3[0]} mug'))
-    stack(e, interface, ctrlr, target_name='mug_2', container_name='mug_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.15, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
-    move(e, interface, ctrlr, dz=0.1, terminator=False, on_finish=change_objective(recorder, 'cover', { 'bottom': 'mug_2', 'top': 'mug' })
-    # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color1[0]} mug on the {mug_scale[0]} {mug_color2[0]} mug'))
-    stack(e, interface, ctrlr, target_name='mug', container_name='mug_2', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.15, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
-    move(e, interface, ctrlr, dz=0.1, terminator=True)
-
-    e.execute()
+        e.execute()

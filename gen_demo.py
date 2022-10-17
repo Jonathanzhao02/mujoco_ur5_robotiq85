@@ -116,7 +116,9 @@ if __name__ == '__main__':
 
         from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover, idle
 
-        mug_scale = gen_scales['mug_mesh']
+        mug_scale1 = gen_scales['mug_mesh']
+        mug_scale2 = gen_scales['mug_mesh_2']
+        mug_scale3 = gen_scales['mug_mesh_3']
         mug_color3 = gen_colors['mug_3']
         mug_color2 = gen_colors['mug_2']
         mug_color1 = gen_colors['mug']
@@ -124,14 +126,11 @@ if __name__ == '__main__':
         bowl_scale = gen_scales['bowl_mesh']
         bowl_color = gen_colors['bowl_3']
 
-        # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color3[0]} mug on the {bowl_scale[0]} {bowl_color[0]} bowl'))
-        stack(e, interface, ctrlr, target_name='mug_3', container_name='bowl_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.1, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
+        stack(e, interface, ctrlr, target_name='mug_3', container_name='bowl_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale3[1], place_dz=0.1, place_dx=0.04 * mug_scale3[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
         move(e, interface, ctrlr, dz=0.1, terminator=False, on_finish=change_objective(recorder, 'cover', { 'bottom': 'mug_3', 'top': 'mug_2' }))
-        # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color2[0]} mug on the {mug_scale[0]} {mug_color3[0]} mug'))
-        stack(e, interface, ctrlr, target_name='mug_2', container_name='mug_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.15, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
+        stack(e, interface, ctrlr, target_name='mug_2', container_name='mug_3', pickup_dz=0.06, pickup_dx=0.04 * mug_scale2[1], place_dz=0.15, place_dx=0.04 * mug_scale2[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
         move(e, interface, ctrlr, dz=0.1, terminator=False, on_finish=change_objective(recorder, 'cover', { 'bottom': 'mug_2', 'top': 'mug' }))
-        # e.append(PrintAction(interface, ctrlr, f'Stack the {mug_scale[0]} {mug_color1[0]} mug on the {mug_scale[0]} {mug_color2[0]} mug'))
-        stack(e, interface, ctrlr, target_name='mug', container_name='mug_2', pickup_dz=0.06, pickup_dx=0.04 * mug_scale[1], place_dz=0.15, place_dx=0.04 * mug_scale[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
+        stack(e, interface, ctrlr, target_name='mug', container_name='mug_2', pickup_dz=0.06, pickup_dx=0.04 * mug_scale1[1], place_dz=0.15, place_dx=0.04 * mug_scale1[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=False)
         move(e, interface, ctrlr, dz=0.1, terminator=True)
 
         e.execute()

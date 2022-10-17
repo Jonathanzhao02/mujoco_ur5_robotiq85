@@ -68,16 +68,16 @@ def gripper_control_func_factory(force=None):
         return u
     return _gripper_control_func
 
-def move(executor, interface, controller, dx=0, dy=0, dz=0, terminator=False):
+def move(executor, interface, controller, dx=0, dy=0, dz=0, terminator=False, on_finish=None):
     target_func = target_func_factory(interface, obj_pos=StaticPosition(interface, 'EE'), dx=dx, dy=dy, dz=dz, rx=-1.57, ry=0, rz=-1.57)
     gripper_idle_func = gripper_control_func_factory()
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=10000))
+        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=10000, on_finish=on_finish))
     else:
-        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, error_limit=0.02))
+        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
 
-def push(executor, interface, controller, target_name, theta=0, grip_force=GRIP_FORCE, terminator=False):
+def push(executor, interface, controller, target_name, theta=0, grip_force=GRIP_FORCE, terminator=False, on_finish=None):
     target_func = target_func_factory(interface, obj_pos=DynamicPosition(interface, target_name), dz=0.15, dx=math.sin(theta) / 8, dy=-math.cos(theta) / 8, rx=-1.57, ry=0, rz=-1.57)
     target_func_2 = target_func_factory(interface, obj_pos=DynamicPosition(interface, target_name), z=0.08, dx=math.sin(theta) / 8, dy=-math.cos(theta) / 8, rx=-1.57, ry=0, rz=-1.57)
     target_func_3 = target_func_factory(interface, obj_pos=StaticPosition(interface, target_name), z=0.08, dx=-math.sin(theta) / 8, dy=math.cos(theta) / 8, rx=-1.57, ry=0, rz=-1.57)
@@ -92,11 +92,11 @@ def push(executor, interface, controller, target_name, theta=0, grip_force=GRIP_
     executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02))
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=10000))
+        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=10000, on_finish=on_finish))
     else:
-        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, error_limit=0.02))
+        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
 
-def pick_up(executor, interface, controller, target_name, theta=0, dx=0, dy=0, dz=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False):
+def pick_up(executor, interface, controller, target_name, theta=0, dx=0, dy=0, dz=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False, on_finish=None):
     target_func = target_func_factory(interface, obj_pos=DynamicPosition(interface, target_name), dx=dx, dy=dy, dz=0.15+dz, rx=-1.57, ry=0, rz=-1.57)
     target_func_2 = target_func_factory(interface, obj_pos=DynamicPosition(interface, target_name), dx=dx, dy=dy, dz=dz, rx=-1.57, ry=0, rz=-1.57)
     target_func_3 = target_func_factory(interface, obj_pos=StaticPosition(interface, 'EE'), z=0.3, rx=-1.57, ry=0, rz=-1.57)
@@ -112,11 +112,11 @@ def pick_up(executor, interface, controller, target_name, theta=0, dx=0, dy=0, d
     executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02))
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=10000))
+        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=10000, on_finish=on_finish))
     else:
-        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=rot_time))
+        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=rot_time, on_finish=on_finish))
 
-def place(executor, interface, controller, target_name=None, target_pos=None, dx=0, dy=0, dz=0, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False):
+def place(executor, interface, controller, target_name=None, target_pos=None, dx=0, dy=0, dz=0, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False, on_finish=None):
     assert target_name is not None or target_pos is not None
 
     if target_name is None:
@@ -143,26 +143,26 @@ def place(executor, interface, controller, target_name=None, target_pos=None, dx
     executor.append(MoveTo(interface, controller, target_func_2, gripper_open_func, time_limit=grip_time))
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, time_limit=10000))
+        executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, time_limit=10000, on_finish=on_finish))
     else:
-        executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02))
+        executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
 
-def rotate(executor, interface, controller, theta=0, rot_time=ROT_TIME, terminator=False):
+def rotate(executor, interface, controller, theta=0, rot_time=ROT_TIME, terminator=False, on_finish=None):
     target_func = target_func_factory(interface, obj_pos=StaticPosition(interface, 'EE'), rx=-1.57, ry=theta, rz=-1.57)
     gripper_idle_func = gripper_control_func_factory()
 
     if terminator:
-        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=10000))
+        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=10000, on_finish=on_finish))
     else:
-        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=rot_time))
+        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=rot_time, on_finish=on_finish))
 
-def rotate_place(executor, interface, controller, target_name=None, target_pos=None, dx=0, dy=0, dz=0, theta=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False):
+def rotate_place(executor, interface, controller, target_name=None, target_pos=None, dx=0, dy=0, dz=0, theta=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False, on_finish=None):
     rotate(executor, interface, controller, theta, rot_time, False)
-    place(executor, interface, controller, target_name, target_pos, dx, dy, dz, grip_time, grip_force, terminator)
+    place(executor, interface, controller, target_name, target_pos, dx, dy, dz, grip_time, grip_force, terminator, on_finish)
 
-def stack(executor, interface, controller, target_name=None, container_name=None, pickup_dx=0, pickup_dy=0, pickup_dz=0, place_dx=0, place_dy=0, place_dz=0, theta=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False):
+def stack(executor, interface, controller, target_name=None, container_name=None, pickup_dx=0, pickup_dy=0, pickup_dz=0, place_dx=0, place_dy=0, place_dz=0, theta=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False, on_finish=None):
     pick_up(executor, interface, controller, target_name, theta, pickup_dx, pickup_dy, pickup_dz, rot_time, grip_time, grip_force, False)
-    rotate_place(executor, interface, controller, container_name, dx=place_dx, dy=place_dy, dz=place_dz, theta=theta, rot_time=rot_time, grip_time=grip_time, grip_force=grip_force, terminator=terminator)
+    rotate_place(executor, interface, controller, container_name, dx=place_dx, dy=place_dy, dz=place_dz, theta=theta, rot_time=rot_time, grip_time=grip_time, grip_force=grip_force, terminator=terminator, on_finish=on_finish)
 
-def cover(executor, interface, controller, target_name=None, container_name=None, pickup_dx=0, pickup_dy=0, pickup_dz=0, place_dx=0, place_dy=0, place_dz=0, theta=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False):
-    stack(executor, interface, controller, container_name, target_name, pickup_dx, pickup_dy, pickup_dz, place_dx, place_dy, place_dz, theta, rot_time, grip_time, grip_force, terminator)
+def cover(executor, interface, controller, target_name=None, container_name=None, pickup_dx=0, pickup_dy=0, pickup_dz=0, place_dx=0, place_dy=0, place_dz=0, theta=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False, on_finish=None):
+    stack(executor, interface, controller, container_name, target_name, pickup_dx, pickup_dy, pickup_dz, place_dx, place_dy, place_dz, theta, rot_time, grip_time, grip_force, terminator, on_finish)

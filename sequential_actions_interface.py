@@ -26,7 +26,7 @@ class Action:
 
 
 class MoveTo(Action):
-    def __init__(self, interface, controller, target_func, gripper_control_func, time_limit=None, error_limit=None):
+    def __init__(self, interface, controller, target_func, gripper_control_func, time_limit=None, error_limit=None, on_finish=None):
         assert time_limit is not None or error_limit is not None, "at least 1 of time limit or error limit should be indicated"
 
         super().__init__(interface, controller)
@@ -35,6 +35,7 @@ class MoveTo(Action):
         self._gripper = None
         self.time_limit = time_limit
         self.error_limit = error_limit
+        self.on_finish = on_finish
 
     def _set_gripper(self, gripper):
         self._gripper = gripper
@@ -80,6 +81,9 @@ class MoveTo(Action):
             if self.error_limit is not None:
                 if error <= self.error_limit:
                     break
+            
+        if self.on_finish is not None:
+            self.on_finish()
         
 
 class Executor:
@@ -96,6 +100,7 @@ class Executor:
 
     def execute(self):
         for i in range(len(self.action_list)):
+            self.current_action = self.action_list[i]
             self.action_list[i].execute()
 
 

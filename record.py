@@ -6,7 +6,7 @@ targets_type = np.dtype([('obj1', 'S64'), ('obj2', 'S64'), ('pos', '<f4', 3), ('
 objective_type = np.dtype([('timestep', 'uint'), ('action', 'S64'), ('targets', targets_type)])
 
 class Recorder():
-    def __init__(self, obj_names, gen_attrs, out_fname, dof=7, objective=None, width=255, height=255, max_timesteps=3):
+    def __init__(self, obj_names, gen_attrs, out_fname, dof=7, objective=None, width=255, height=255, max_timesteps=5000):
         self.obj_names = ['EE'] + obj_names
         self.gen_attrs = gen_attrs
         self.out_fname = out_fname

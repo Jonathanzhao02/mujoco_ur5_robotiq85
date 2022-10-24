@@ -86,7 +86,8 @@ class MujocoConfig:
 
             for asset in root.findall("asset/texture"):
                 # assuming that texture are placed in the meshes folder
-                files.append(asset.get("file").split("/")[1])
+                if asset.get("file"):
+                    files.append(asset.get("file").split("/")[1])
 
             # check if our mesh folder exists, then check we have all the files
             #download_meshes.check_and_download(

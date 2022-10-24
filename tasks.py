@@ -6,6 +6,7 @@ ROT_TIME = 400
 GRIP_FORCE = 0.2
 GRIP_TIME = 25
 TERMINATOR_TIME = 100
+ERROR_LIMIT = 0.01
 
 class StaticPosition:
     def __init__(self, interface, obj_name):
@@ -76,7 +77,7 @@ def move(executor, interface, controller, dx=0, dy=0, dz=0, time_limit=None, ter
     if terminator:
         executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
     elif time_limit is None:
-        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
+        executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, error_limit=ERROR_LIMIT, on_finish=on_finish))
     else:
         executor.append(MoveTo(interface, controller, target_func, gripper_idle_func, time_limit=time_limit, on_finish=on_finish))
 
@@ -93,14 +94,14 @@ def push(executor, interface, controller, target_name, theta=0, grip_force=GRIP_
     gripper_open_func = gripper_control_func_factory(-grip_force)
     gripper_close_func = gripper_control_func_factory(grip_force)
 
-    executor.append(MoveTo(interface, controller, target_func, gripper_close_func, error_limit=0.02))
-    executor.append(MoveTo(interface, controller, target_func_2, gripper_idle_func, error_limit=0.02))
-    executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02))
+    executor.append(MoveTo(interface, controller, target_func, gripper_close_func, error_limit=ERROR_LIMIT))
+    executor.append(MoveTo(interface, controller, target_func_2, gripper_idle_func, error_limit=ERROR_LIMIT))
+    executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=ERROR_LIMIT))
 
     if terminator:
         executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
     else:
-        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
+        executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, error_limit=ERROR_LIMIT, on_finish=on_finish))
 
 def pick_up(executor, interface, controller, target_name, theta=0, dx=0, dy=0, dz=0, rot_time=ROT_TIME, grip_time=GRIP_TIME, grip_force=GRIP_FORCE, terminator=False, on_finish=None):
     target_func = target_func_factory(interface, obj_pos=DynamicPosition(interface, target_name), dx=dx, dy=dy, dz=0.15+dz, rx=-1.57, ry=0, rz=-1.57)
@@ -112,10 +113,10 @@ def pick_up(executor, interface, controller, target_name, theta=0, dx=0, dy=0, d
     gripper_open_func = gripper_control_func_factory(-grip_force)
     gripper_close_func = gripper_control_func_factory(grip_force)
 
-    executor.append(MoveTo(interface, controller, target_func, gripper_open_func, error_limit=0.02))
-    executor.append(MoveTo(interface, controller, target_func_2, gripper_idle_func, error_limit=0.02))
+    executor.append(MoveTo(interface, controller, target_func, gripper_open_func, error_limit=ERROR_LIMIT))
+    executor.append(MoveTo(interface, controller, target_func_2, gripper_idle_func, error_limit=ERROR_LIMIT))
     executor.append(MoveTo(interface, controller, target_func_2, gripper_close_func, time_limit=grip_time))
-    executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02))
+    executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=ERROR_LIMIT))
 
     if terminator:
         executor.append(MoveTo(interface, controller, target_func_4, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
@@ -138,20 +139,20 @@ def place(executor, interface, controller, target_name=None, target_pos=None, dx
 
     target_func = target_func_factory(interface, **pos_args, dx=dx, dy=dy, dz=0.15+dz, rx=-1.57, rz=-1.57)
     target_func_2 = target_func_factory(interface, **pos_args, dx=dx, dy=dy, dz=dz, rx=-1.57, rz=-1.57)
-    target_func_3 = target_func_factory(interface, **pos_args, dx=dx, dy=dy, dz=0.15, rx=-1.57, rz=-1.57)
+    target_func_3 = target_func_factory(interface, **pos_args, dx=dx, dy=dy, dz=0.15+dz, rx=-1.57, rz=-1.57)
 
     gripper_idle_func = gripper_control_func_factory()
     gripper_open_func = gripper_control_func_factory(-grip_force)
     gripper_close_func = gripper_control_func_factory(grip_force)
 
-    executor.append(MoveTo(interface, controller, target_func, gripper_close_func, error_limit=0.02))
-    executor.append(MoveTo(interface, controller, target_func_2, gripper_idle_func, error_limit=0.02))
+    executor.append(MoveTo(interface, controller, target_func, gripper_close_func, error_limit=ERROR_LIMIT))
+    executor.append(MoveTo(interface, controller, target_func_2, gripper_idle_func, error_limit=ERROR_LIMIT))
     executor.append(MoveTo(interface, controller, target_func_2, gripper_open_func, time_limit=grip_time))
 
     if terminator:
         executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, time_limit=TERMINATOR_TIME, on_finish=on_finish))
     else:
-        executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=0.02, on_finish=on_finish))
+        executor.append(MoveTo(interface, controller, target_func_3, gripper_idle_func, error_limit=ERROR_LIMIT, on_finish=on_finish))
 
 def rotate(executor, interface, controller, theta=0, rot_time=ROT_TIME, terminator=False, on_finish=None):
     target_func = target_func_factory(interface, obj_pos=StaticPosition(interface, 'EE'), rx=-1.57, ry=theta, rz=-1.57)

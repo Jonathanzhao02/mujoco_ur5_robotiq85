@@ -60,11 +60,23 @@
         <mesh name="robotiq_arg2f_85_inner_finger_vis" file="robotiq_85_gripper/robotiq_arg2f_85_inner_finger_vis.stl" scale="0.001 0.001 0.001" />
         <mesh name="robotiq_arg2f_85_inner_knuckle_vis" file="robotiq_85_gripper/robotiq_arg2f_85_inner_knuckle_vis.stl" scale="0.001 0.001 0.001" />
         <texture name="floor_tile" file="meshes/ur5/floor_tile.png" width="3000" height="3000" type="2d"/>
+        <texture name="wood" file="meshes/ur5/wood.png" width="3000" height="3000" type="2d"/>
+        <texture name="skybox" type="skybox" builtin="flat" rgb2="1 1 1" width="100" height="100"/>
+        <texture name="checker" type="2d" builtin="checker" rgb1="0 0 0" rgb2="1 1 1" width="500" height="500"/>
         <material name="tile" texture="floor_tile" specular="0" shininess="0" reflectance="0" emission="1" />
         <material name="silver" specular="1" shininess="0.5" reflectance="1" emission="0.25" rgba="0.82 0.82 0.82 1"/>
         <material name="grey" specular="1" shininess="0.5" reflectance="1" emission="0.1" rgba="0.5 0.5 0.5 1"/>
         <material name="blue" specular="1" shininess="0.5" reflectance="1" emission="0" rgba="0.678 0.847 0.902 1"/>
         <material name="black" specular="1" shininess="0.5" reflectance="1" emission="0" rgba="0.2 0.2 0.2 1"/>
+        <material name="white" specular="1" shininess="0.5" reflectance="1" emission="0" rgba="0.9 0.9 0.9 1"/>
+        <material name="brown" specular="1" shininess="0.5" reflectance="1" emission="0" rgba="0.4 0.2 0.04 1"/>
+        <material name="invisible" specular="0" shininess="0" reflectance="0" emission="0" rgba="0 0 0 0"/>
+
+        <material name="wooden" texture="wood" specular="0" shininess="0" reflectance="0" emission="1" />
+        <material name="checkered" texrepeat="30 30" texture="checker" specular="0" shininess="0" reflectance="0" emission="1" />
+
+        <mesh name="kitchen1" file="74-kitchen/kitchen1.stl" scale="0.03 0.03 0.03"/>
+        <mesh name="kitchen2" file="74-kitchen/kitchen2.stl" scale="0.03 0.03 0.03"/>
 
         <__template __rand_scale="true" __id='bowl_mesh' __tag="mesh" __n="64" name="bowl{i:03d}" file="objects/bowl/bowl{i:03d}-binary.stl" scale="0.16 0.16 0.16" />
         <__template __rand_scale="true" __id='bowl_mesh_2' __tag="mesh" __n="64" name="bowl{i:03d}_2" file="objects/bowl/bowl{i:03d}-binary.stl" scale="0.16 0.16 0.16" />
@@ -80,10 +92,24 @@
     </asset>
 
     <worldbody>
-        <geom name="floor_grey_tile" pos="0 0 -0.001" size="0.75 0.75 0.05" type="plane" material="tile"/>
+        <geom name="kitchen1" pos="0 -2 -0.7" type="mesh" mesh="kitchen1" material="brown" contype="0" conaffinity="0" />
+        <geom name="kitchen2" pos="0 -2 -0.7" type="mesh" mesh="kitchen2" material="brown" contype="0" conaffinity="0" />
+
+        <geom name="wall1" pos="0 -2.1 0.75" type="box" size="3 0.01 1.5" material="white" contype="0" conaffinity="0" />
+        <geom name="wall2" pos="3 0 0.75" type="box" size="0.01 3 1.5" material="white" contype="0" conaffinity="0" />
+        <geom name="wall3" pos="-3 0 0.75" type="box" size="0.01 3 1.5" material="white" contype="0" conaffinity="0" />
+
+        <geom name="floor_tile" pos="0 0 -0.7" size="5 5 0.05" type="plane" material="checkered"/>
+        <geom name="tabletop_col" pos="0 0 -0.001" size="0.75 0.75 0.05" type="plane" material="invisible"/>
+        <geom name="tabletop" pos="0 0 -0.02" size="0.75 0.75 0.02" type="box" material="wooden" contype="0" conaffinity="0"/>
+        <geom name="leg1" pos="0.7 0.7 -0.7" size="0.05 0.7" type="cylinder" material="wooden"/>
+        <geom name="leg2" pos="-0.7 0.7 -0.7" size="0.05 0.7" type="cylinder" material="wooden"/>
+        <geom name="leg3" pos="0.7 -0.7 -0.7" size="0.05 0.7" type="cylinder" material="wooden"/>
+        <geom name="leg4" pos="-0.7 -0.7 -0.7" size="0.05 0.7" type="cylinder" material="wooden"/>
         <camera name='111' fovy="60" pos="0 1.5 1" euler="-1 0 3.14" mode="fixed"/>
 
-        <light directional="true" pos="-0.5 0.5 3" dir="0 0 -1" />
+        <!-- <light directional="true" pos="-0.5 0.5 3" dir="0 0 -1" /> -->
+        <light pos="-0.5 0.5 3" cutoff="360" exponent="80" />
 
         <body name="base_link" pos="0 -0.3 0">
             <geom name="link0" type="mesh" mesh="link0" pos="0 0 0"/>

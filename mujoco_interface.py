@@ -1,5 +1,6 @@
 import mujoco_py as mjp
 import numpy as np
+import glfw
 from mujoco_py.generated import const
 
 from abr_control.utils import transformations
@@ -142,7 +143,10 @@ class Mujoco(Interface):
 
     def disconnect(self):
         """Stop and reset the simulation."""
-        # nothing to do to close a MuJoCo session
+        glfw.destroy_window(self.viewer.window)
+        self.sim.reset()
+        del self.viewer
+        del self.sim
         print("MuJoCO session closed...")
 
     def get_joints_in_ee_kinematic_tree(self):

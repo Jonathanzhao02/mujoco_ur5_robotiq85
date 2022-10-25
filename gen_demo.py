@@ -40,8 +40,9 @@ def random_place(interface, objs):
 
     for obj in objs:
         i = obj_idxes[obj]
+        tries = 0
 
-        while True:
+        while tries < 100000:
             x = (np.random.rand(1) - 0.5) * 0.5
             y = (np.random.rand(1) - 0.5) * 0.25 + 0.7475 - 0.4
             too_close = False
@@ -53,6 +54,7 @@ def random_place(interface, objs):
                 interface.sim.data.qpos[-7 - i * 7] = x
                 interface.sim.data.qpos[-6 - i * 7] = y
                 break
+            tries += 1
     
     print(interface.sim.data.qpos)
 
@@ -89,6 +91,7 @@ class SamplingRecorder():
             self.step += 1
 
 if __name__ == '__main__':
+    import mujoco_py
 
     import random
     from sequential_actions_interface import *
@@ -100,30 +103,41 @@ if __name__ == '__main__':
     from record import Recorder
     from parse_xml import parse_xml
     from pathlib import Path
+    import argparse
 
-    for i in range(5000):
-        combos = [
-            ['bowl', 'plate'],
-            ['mug', 'plate'],
-            ['mug', 'bowl'],
-            ['bowl', 'mug'],
-        ]
+    parser = argparse.ArgumentParser(description="Generate a single demonstration")
+    parser.add_argument("idx", help="Index of demonstration", type=int)
 
-        objs = [
-            'bowl',
-            'plate',
-            'mug'
-        ]
+    args = parser.parse_args()
 
-        sel = random.choice(combos)
-        
-        gen_colors, gen_sizes, gen_scales = parse_xml(
-            Path('my_models/ur5_robotiq85/ur5_tabletop_template.xml'),
-            '__template',
-            Path('my_models/ur5_robotiq85/ur5_tabletop.xml')
-        )
+    i = args.idx
 
-        with Recorder(objs, {
+    combos = [
+        ['bowl', 'plate'],
+        ['mug', 'plate'],
+        ['mug', 'bowl'],
+        ['bowl', 'mug'],
+    ]
+
+    objs = [
+        'bowl',
+        'plate',
+        'mug'
+    ]
+
+    sel = random.choice(combos)
+    
+    gen_colors, gen_sizes, gen_scales = parse_xml(
+        Path('my_models/ur5_robotiq85/ur5_tabletop_template.xml'),
+        '__template',
+        Path('my_models/ur5_robotiq85/ur5_tabletop.xml')
+    )
+
+    recorder = None
+    interface = None
+
+    try:
+        recorder = Recorder(objs, {
                 'color': {obj: gen_colors[obj] if obj in gen_colors.keys() else None for obj in objs},
                 'size': {obj: gen_sizes[obj] if obj in gen_sizes.keys() else None for obj in objs},
                 'scale': {obj: gen_scales[obj] if obj in gen_scales.keys() else None for obj in objs}
@@ -138,46 +152,51 @@ if __name__ == '__main__':
                 }
             },
             max_timesteps=400,
-        ) as recorder:
-            # create our Mujoco interface
-            robot_config = arm('ur5_tabletop.xml', folder='./my_models/ur5_robotiq85')
-            interface = Mujoco(robot_config, dt=0.008, on_step=SamplingRecorder(recorder, 2))
-            interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
-            random_place(interface, objs)
+        )
+        # create our Mujoco interface
+        robot_config = arm('ur5_tabletop.xml', folder='./my_models/ur5_robotiq85')
+        interface = Mujoco(robot_config, dt=0.008, on_step=SamplingRecorder(recorder, 2))
+        interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
+        random_place(interface, objs)
 
-            recorder.set_verifier(create_verifier(interface, sel))
-            
-            # damp the movements of the arm
-            damping = Damping(robot_config, kv=10)
-            # instantiate controller
-            ctrlr = OSC(
-                robot_config,
-                kp=200,
-                null_controllers=[damping],
-                vmax=[0.5, 0.5],  # [m/s, rad/s]
-                # control (x, y, z) out of [x, y, z, alpha, beta, gamma]
-                ctrlr_dof=[True, True, True, True, True, True],
-                orientation_algorithm=1,
-            )
-
-            e = Executor(interface, robot_config.START_ANGLES, -0.05)
-
-            from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover, idle
+        recorder.set_verifier(create_verifier(interface, sel))
         
-            if sel[1] == 'mug':
-                place_dz = MUG_PLACE_DZ
-            elif sel[1] == 'plate':
-                place_dz = PLATE_PLACE_DZ
-            elif sel[1] == 'bowl':
-                place_dz = BOWL_PLACE_DZ
+        # damp the movements of the arm
+        damping = Damping(robot_config, kv=10)
+        # instantiate controller
+        ctrlr = OSC(
+            robot_config,
+            kp=200,
+            null_controllers=[damping],
+            vmax=[0.5, 0.5],  # [m/s, rad/s]
+            # control (x, y, z) out of [x, y, z, alpha, beta, gamma]
+            ctrlr_dof=[True, True, True, True, True, True],
+            orientation_algorithm=1,
+        )
 
-            if sel[0] == 'mug':
-                mug_scale1 = gen_scales['mug_mesh']
-                mug_color1 = gen_colors['mug']
-                stack(e, interface, ctrlr, target_name='mug', container_name=sel[1], pickup_dz=MUG_PICKUP_DZ, pickup_dx=MUG_PICKUP_DX * mug_scale1[1], place_dz=place_dz, place_dx=MUG_PICKUP_DX * mug_scale1[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=True)
-            else:
-                bowl_scale1 = gen_scales['bowl_mesh']
-                bowl_color1 = gen_colors['bowl']
-                stack(e, interface, ctrlr, target_name='bowl', container_name=sel[1], pickup_dz=BOWL_PICKUP_DZ / bowl_scale1[1], pickup_dx=BOWL_PICKUP_DX * bowl_scale1[1], place_dz=place_dz, place_dx=BOWL_PICKUP_DX * bowl_scale1[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=True)
+        e = Executor(interface, robot_config.START_ANGLES, -0.05)
 
-            e.execute()
+        from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover, idle
+    
+        if sel[1] == 'mug':
+            place_dz = MUG_PLACE_DZ
+        elif sel[1] == 'plate':
+            place_dz = PLATE_PLACE_DZ
+        elif sel[1] == 'bowl':
+            place_dz = BOWL_PLACE_DZ
+
+        if sel[0] == 'mug':
+            mug_scale1 = gen_scales['mug_mesh']
+            mug_color1 = gen_colors['mug']
+            stack(e, interface, ctrlr, target_name='mug', container_name=sel[1], pickup_dz=MUG_PICKUP_DZ, pickup_dx=MUG_PICKUP_DX * mug_scale1[1], place_dz=place_dz, place_dx=MUG_PICKUP_DX * mug_scale1[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=True)
+        else:
+            bowl_scale1 = gen_scales['bowl_mesh']
+            bowl_color1 = gen_colors['bowl']
+            stack(e, interface, ctrlr, target_name='bowl', container_name=sel[1], pickup_dz=BOWL_PICKUP_DZ / bowl_scale1[1], pickup_dx=BOWL_PICKUP_DX * bowl_scale1[1], place_dz=place_dz, place_dx=BOWL_PICKUP_DX * bowl_scale1[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=True)
+
+        e.execute()
+    finally:
+        if recorder is not None:
+            recorder.close()
+        if interface is not None:
+            interface.disconnect()

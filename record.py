@@ -78,7 +78,7 @@ class Recorder():
             self.cnt += 1
         else:
             self._f.attrs['success'] = False
-            raise Exception(f'Exceeded max time {self.max_timesteps}')
+            raise RuntimeError(f'Exceeded max time {self.max_timesteps}')
         
     def write_objective(self, objective):
         self.objective_data.resize((self.ocnt + 1,))
@@ -101,7 +101,7 @@ class Recorder():
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def close(self):
         try:
             self._f.attrs['final_timestep'] = self.cnt
             self._f.attrs['success'] = self.verify() and self.cnt < self.max_timesteps
@@ -110,3 +110,6 @@ class Recorder():
         
         self._f.close()
         return False
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()

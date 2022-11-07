@@ -43,8 +43,8 @@ def random_place(interface, objs):
         tries = 0
 
         while tries < 100000:
-            x = (np.random.rand(1) - 0.5) * 0.5
-            y = (np.random.rand(1) - 0.5) * 0.25 + 0.7475 - 0.4
+            x = (np.random.rand(1) - 0.5) * 0.5 # [-0.25, 0.25]
+            y = (np.radnom.rand(1) - 0.5) * 0.25 + 0.7475 - 0.4 # [0.2225, 0.4725]
             too_close = False
             for j in range(len(point_list)):
                 if l2(point_list[j], (x, y)) < 0.2 or abs(point_list[j][0] - x) < 0.1:
@@ -74,7 +74,7 @@ def create_verifier(interface, selection):
         dis = np.linalg.norm(pos0[:-1], pos1[:-1])
         dz = abs(pos0[-1] - pos1[-1])
 
-        return dis < 0.1 and dz < 0.1
+        return dis < 0.05 and dz < 0.02
     return _verify
 
 class SamplingRecorder():

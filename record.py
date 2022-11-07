@@ -25,6 +25,7 @@ class Recorder():
         self._f = h5py.File(self.out_fname, 'w')
 
         if self._f:
+            objs = self._f.create_dataset('objs', data=self.obj_names)
             grp = self._f.create_group('gen_attrs')
 
             for attr in gen_attrs.keys():

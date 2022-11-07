@@ -1,13 +1,13 @@
 import h5py
 import numpy as np
 
+from PIL import Image
+import matplotlib.pyplot as plt
+
 DIST_MAX = 0.75
 AVG_CHANGE = 0.15
 
 if __name__ == '__main__':
-    targets_type = np.dtype([('obj1', 'S64'), ('obj2', 'S64'), ('pos', '<f4', 3), ('rot', '<f4', 3)])
-    objective_type = np.dtype([('timestep', 'uint'), ('action', 'S64'), ('targets', targets_type)])
-
     valid = 0
 
     for i in range(1, 2001):
@@ -51,13 +51,21 @@ if __name__ == '__main__':
                         # obj0.attrs['obj2'] = bytes.decode(objs[sim_idx])
 
                         if sim < 0.08:
-                            valid_demo = True
-                            print(f'{i} : {obj1} onto {obj2}')
-            
+                            rot_final = f['rot'][f.attrs['final_timestep'] - 1]
+                            rot_initial = f['rot'][0]
+                            rot_diff = np.linalg.norm(rot_final[idx] - rot_initial[idx]) + np.linalg.norm(rot_final[sim_idx] - rot_initial[sim_idx])
+
+                            if rot_diff < 0.85:
+                                valid_demo = True
+                                # print(f'{i} : {obj1} onto {obj2}')
+
                 if not valid_demo:
                     # f.attrs['success'] = False
                     print(f'invalid for {i}')
                 else:
+                    # img = Image.open(f'demos/demo{i}_imgs/{f.attrs["final_timestep"] - 1}.png')
+                    # plt.imshow(img)
+                    # plt.show()
                     valid += 1
 
     print(valid)

@@ -45,10 +45,11 @@ if __name__ == '__main__':
 
                         # objectives = f.create_group('objectives')
                         # obj0 = objectives.create_group('0')
+                        # target_grp = obj0.create_group('targets')
                         # obj0.attrs['timestep'] = 0
                         # obj0.attrs['action'] = 'stack'
-                        # obj0.attrs['obj1'] = bytes.decode(objs[idx])
-                        # obj0.attrs['obj2'] = bytes.decode(objs[sim_idx])
+                        # target_grp.attrs['obj1'] = bytes.decode(objs[idx])
+                        # target_grp.attrs['obj2'] = bytes.decode(objs[sim_idx])
 
                         if sim < 0.08:
                             rot_final = f['rot'][f.attrs['final_timestep'] - 1]

@@ -88,17 +88,19 @@ class Recorder():
         obj.attrs['timestep'] = self.cnt
         obj.attrs['action'] = objective['action']
 
+        target_grp = obj.create_group('targets')
+
         if 'obj1' in targets:
-            obj.attrs['obj1'] = targets['obj1']
+            target_grp.attrs['obj1'] = targets['obj1']
         
         if 'obj2' in targets:
-            obj.attrs['obj2'] = targets['obj2']
+            target_grp.attrs['obj2'] = targets['obj2']
         
         if 'pos' in targets:
-            obj.create_dataset('pos', data=targets['pos'])
+            target_grp.create_dataset('pos', data=targets['pos'])
         
         if 'rot' in targets:
-            obj.create_dataset('rot', data=targets['rot'])
+            target_grp.create_dataset('rot', data=targets['rot'])
 
         self.ocnt += 1
     

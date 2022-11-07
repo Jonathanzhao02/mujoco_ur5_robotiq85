@@ -33,12 +33,13 @@ class Recorder():
 
                 for obj_name,val in gen_attrs[attr].items():
                     if val is not None:
-                        attr_grp.create_dataset(obj_name, data=val)
+                        at = attr_grp.create_group(obj_name)
+                        at.attrs['name'] = val[0]
+                        at.attrs['value'] = val[1]
 
-            self.objective_data = self._f.create_dataset('objective', shape=(0), maxshape=(max_timesteps), dtype=objective_type, chunks=True)
+            self.objective_data = self._f.create_group('objectives')
             self.q_data = self._f.create_dataset('q', shape=(max_timesteps, dof), dtype='<f4')
             self.dq_data = self._f.create_dataset('dq', shape=(max_timesteps, dof), dtype='<f4')
-            # self.img_data = self._f.create_dataset('img', shape=(max_timesteps, width, height, 3), dtype='<B')
             self.pos_data = self._f.create_dataset('pos', shape=(max_timesteps, len(self.obj_names), 3), dtype='<f4')
             self.rot_data = self._f.create_dataset('rot', shape=(max_timesteps, len(self.obj_names), 3), dtype='<f4')
             self._f.attrs['success'] = True
@@ -64,7 +65,6 @@ class Recorder():
             img = interface.sim.render(self.width,self.height,camera_name='111').astype('<B')
             while img.sum() == 0:
                 img = interface.sim.render(self.width,self.height,camera_name='111').astype('<B')
-            # self.img_data[self.cnt] = img
             img = np.flip(img, 0)
             Image.fromarray(img).save(str(self.out_folder.joinpath(f'{self.cnt}.png')))
 
@@ -82,20 +82,23 @@ class Recorder():
             raise RuntimeError(f'Exceeded max time {self.max_timesteps}')
         
     def write_objective(self, objective):
-        self.objective_data.resize((self.ocnt + 1,))
-        self.objective_data[self.ocnt]['timestep'] = self.cnt
-        self.objective_data[self.ocnt]['action'] = objective['action']
-
         targets = objective['targets']
 
+        obj = self.objective_data.create_group(str(self.ocnt))
+        obj.attrs['timestep'] = self.cnt
+        obj.attrs['action'] = objective['action']
+
         if 'obj1' in targets:
-            self.objective_data[self.ocnt]['targets']['obj1'] = targets['obj1']
+            obj.attrs['obj1'] = targets['obj1']
+        
         if 'obj2' in targets:
-            self.objective_data[self.ocnt]['targets']['obj2'] = targets['obj2']
+            obj.attrs['obj2'] = targets['obj2']
+        
         if 'pos' in targets:
-            self.objective_data[self.ocnt]['targets']['pos'] = targets['pos']
+            obj.create_dataset('pos', data=targets['pos'])
+        
         if 'rot' in targets:
-            self.objective_data[self.ocnt]['targets']['rot'] = targets['rot']
+            obj.create_dataset('rot', data=targets['rot'])
 
         self.ocnt += 1
     

@@ -79,16 +79,16 @@
         <mesh name="kitchen2" file="74-kitchen/kitchen2.stl" scale="0.03 0.03 0.03"/>
 
         <__template __rand_scale="true" __id='bowl_mesh' __tag="mesh" __n="64" name="bowl{i:03d}" file="objects/bowl/bowl{i:03d}-binary.stl" scale="0.16 0.16 0.16" />
-        <__template __rand_scale="true" __id='bowl_mesh_2' __tag="mesh" __n="64" name="bowl{i:03d}_2" file="objects/bowl/bowl{i:03d}-binary.stl" scale="0.16 0.16 0.16" />
-        <__template __rand_scale="true" __id='bowl_mesh_3' __tag="mesh" __n="64" name="bowl{i:03d}_3" file="objects/bowl/bowl{i:03d}-binary.stl" scale="0.16 0.16 0.16" />
+        <__template __rand_scale="true" __id='bowl_2_mesh' __tag="mesh" __n="64" name="bowl_2_{i:03d}" file="objects/bowl/bowl{i:03d}-binary.stl" scale="0.16 0.16 0.16" />
+        <__template __rand_scale="true" __id='bowl_3_mesh' __tag="mesh" __n="64" name="bowl_3_{i:03d}" file="objects/bowl/bowl{i:03d}-binary.stl" scale="0.16 0.16 0.16" />
 
         <__template __rand_scale="true" __id='plate_mesh' __tag="mesh" __n="64" name="plate{i:03d}" file="objects/plate/plate{i:03d}-binary.stl" scale="0.12 0.12 0.12" />
-        <__template __rand_scale="true" __id='plate_mesh_2' __tag="mesh" __n="64" name="plate{i:03d}_2" file="objects/plate/plate{i:03d}-binary.stl" scale="0.12 0.12 0.12" />
-        <__template __rand_scale="true" __id='plate_mesh_3' __tag="mesh" __n="64" name="plate{i:03d}_3" file="objects/plate/plate{i:03d}-binary.stl" scale="0.12 0.12 0.12" />
+        <__template __rand_scale="true" __id='plate_2_mesh' __tag="mesh" __n="64" name="plate_2_{i:03d}" file="objects/plate/plate{i:03d}-binary.stl" scale="0.12 0.12 0.12" />
+        <__template __rand_scale="true" __id='plate_3_mesh' __tag="mesh" __n="64" name="plate_3_{i:03d}" file="objects/plate/plate{i:03d}-binary.stl" scale="0.12 0.12 0.12" />
 
         <__template __rand_scale="true" __id='mug_mesh' __tag="mesh" __n="64" name="mug{i:03d}" file="objects/mug/mug{i:03d}-binary.stl" scale="0.04 0.04 0.04" />
-        <__template __rand_scale="true" __id='mug_mesh_2' __tag="mesh" __n="64" name="mug{i:03d}_2" file="objects/mug/mug{i:03d}-binary.stl" scale="0.04 0.04 0.04" />
-        <__template __rand_scale="true" __id='mug_mesh_3' __tag="mesh" __n="64" name="mug{i:03d}_3" file="objects/mug/mug{i:03d}-binary.stl" scale="0.04 0.04 0.04" />
+        <__template __rand_scale="true" __id='mug_2_mesh' __tag="mesh" __n="64" name="mug_2_{i:03d}" file="objects/mug/mug{i:03d}-binary.stl" scale="0.04 0.04 0.04" />
+        <__template __rand_scale="true" __id='mug_3_mesh' __tag="mesh" __n="64" name="mug_3_{i:03d}" file="objects/mug/mug{i:03d}-binary.stl" scale="0.04 0.04 0.04" />
     </asset>
 
     <worldbody>
@@ -261,11 +261,11 @@
         </body>
         <body name="bowl_2" pos="1 10 0.05">
             <joint type="free" name="bowl_2"/>
-            <__template __rand_color="true" __id='bowl_2' __tag="geom" __n="64" name="bowl{i:03d}_2" type="mesh" mesh="bowl{i:03d}_2" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
+            <__template __rand_color="true" __id='bowl_2' __tag="geom" __n="64" name="bowl_2_{i:03d}" type="mesh" mesh="bowl_2_{i:03d}" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
         </body>
         <body name="bowl_3" pos="-1 10 0.05">
             <joint type="free" name="bowl_3"/>
-            <__template __rand_color="true" __id='bowl_3' __tag="geom" __n="64" name="bowl{i:03d}_3" type="mesh" mesh="bowl{i:03d}_3" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
+            <__template __rand_color="true" __id='bowl_3' __tag="geom" __n="64" name="bowl_3_{i:03d}" type="mesh" mesh="bowl_3_{i:03d}" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
         </body>
         <body name="plate" pos="1 11 0.05">
             <joint type="free" name="plate"/>
@@ -273,11 +273,11 @@
         </body>
         <body name="plate_2" pos="-1 11 0.05">
             <joint type="free" name="plate_2"/>
-            <__template __rand_color="true" __id='plate_2' __tag="geom" __n="64" name="plate{i:03d}_2" type="mesh" mesh="plate{i:03d}_2" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
+            <__template __rand_color="true" __id='plate_2' __tag="geom" __n="64" name="plate_2_{i:03d}" type="mesh" mesh="plate_2_{i:03d}" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
         </body>
         <body name="plate_3" pos="1 12 0.05">
             <joint type="free" name="plate_3"/>
-            <__template __rand_color="true" __id='plate_3' __tag="geom" __n="64" name="plate{i:03d}_3" type="mesh" mesh="plate{i:03d}_3" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
+            <__template __rand_color="true" __id='plate_3' __tag="geom" __n="64" name="plate_3_{i:03d}" type="mesh" mesh="plate_3_{i:03d}" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
         </body>
         <body name="mug" pos="-1 12 0.05">
             <joint type="free" name="mug"/>
@@ -285,11 +285,11 @@
         </body>
         <body name="mug_2" pos="-1 9 0.05">
             <joint type="free" name="mug_2"/>
-            <__template __rand_color="true" __id='mug_2' __tag="geom" __n="64" name="mug{i:03d}_2" type="mesh" mesh="mug{i:03d}_2" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
+            <__template __rand_color="true" __id='mug_2' __tag="geom" __n="64" name="mug_2_{i:03d}" type="mesh" mesh="mug_2_{i:03d}" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
         </body>
         <body name="mug_3" pos="1 9 0.05">
             <joint type="free" name="mug_3"/>
-            <__template __rand_color="true" __id='mug_3' __tag="geom" __n="64" name="mug{i:03d}_3" type="mesh" mesh="mug{i:03d}_3" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
+            <__template __rand_color="true" __id='mug_3' __tag="geom" __n="64" name="mug_3_{i:03d}" type="mesh" mesh="mug_3_{i:03d}" material="grey" contype="1" conaffinity="1" solimp="0.999 0.999 0.01" solref="0.01 1" condim="4" friction="0.8 0.8 10" density="20" />
         </body>
 
     </worldbody>

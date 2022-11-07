@@ -25,6 +25,9 @@ MUG_PLACE_DZ = 0.2
 BOWL_PLACE_DZ = 0.2
 PLATE_PLACE_DZ = 0.1
 
+DIST_MAX = 0.75
+AVG_CHANGE = 0.15
+
 # Randomly place the target object
 def random_place(interface, objs):
 
@@ -68,13 +71,48 @@ def change_objective(recorder, action, targets):
 
 def create_verifier(interface, selection):
     def _verify(recorder):
-        pos0 = interface.get_xyz(selection[0]) # picked up
-        pos1 = interface.get_xyz(selection[1]) # placed
+        f = recorder._f
+        valid_demo = False
 
-        dis = np.linalg.norm(pos0[:-1], pos1[:-1])
-        dz = abs(pos0[-1] - pos1[-1])
+        if f.attrs['success']:
+            objs = f['objs']
+            start = f['pos'][0]
+            end = f['pos'][f.attrs['final_timestep'] - 1]
 
-        return dis < 0.05 and dz < 0.02
+            dpos = end - start
+            dist = np.linalg.norm(dpos, axis=1)[1:] # exclude EE
+
+            if np.max(dist) < DIST_MAX and np.sum(dist > AVG_CHANGE) <= 1:
+                idx = -1
+            
+                for k in range(len(objs) - 1):
+                    if dist[k] > AVG_CHANGE:
+                        idx = k + 1
+                
+                if idx != -1:
+                    sim_idx = -1
+                    sim = np.inf
+
+                    for k in range(1,len(objs)):
+                        d = np.linalg.norm(end[k] - end[idx])
+                        if k != idx and d < sim:
+                            sim = d
+                            sim_idx = k
+                    
+                    obj1 = bytes.decode(objs[idx])
+                    obj2 = bytes.decode(objs[sim_idx])
+
+                    objective = f['objectives']['0']
+
+                    if objective.attrs['obj1'] == obj1 and objective.attrs['obj2'] == obj2:
+                        if sim < 0.08:
+                            rot_final = f['rot'][f.attrs['final_timestep'] - 1]
+                            rot_initial = f['rot'][0]
+                            rot_diff = np.linalg.norm(rot_final[idx] - rot_initial[idx]) + np.linalg.norm(rot_final[sim_idx] - rot_initial[sim_idx])
+
+                            if rot_diff < 0.85:
+                                valid_demo = True
+        return valid_demo
     return _verify
 
 class SamplingRecorder():

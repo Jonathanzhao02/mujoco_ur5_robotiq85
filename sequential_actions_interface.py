@@ -65,7 +65,7 @@ class MoveTo(Action):
                 u = self.gripper_control_func(u, self._gripper)
 
             # send forces into Mujoco, step the sim forward
-            self.interface.send_forces(u, update_display=True)
+            self.interface.send_forces(u, update_display=False)
 
             # calculate time step
             time_step += 1

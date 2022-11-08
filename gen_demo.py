@@ -193,7 +193,7 @@ if __name__ == '__main__':
         )
         # create our Mujoco interface
         robot_config = arm('ur5_tabletop.xml', folder='./my_models/ur5_robotiq85')
-        interface = Mujoco(robot_config, dt=0.008, on_step=SamplingRecorder(recorder, 2))
+        interface = Mujoco(robot_config, dt=0.008, on_step=SamplingRecorder(recorder, 2), visualize=False, create_offscreen_rendercontext=True)
         interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
         random_place(interface, objs)
 

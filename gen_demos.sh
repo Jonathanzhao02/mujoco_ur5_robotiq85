@@ -1,7 +1,6 @@
 #!/bin/bash
 
-for i in {2001...2002}
+for i in {1..2000}
 do
     python gen_demo.py $i
-    exit
 done

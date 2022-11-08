@@ -138,14 +138,17 @@ class Mujoco(Interface):
             if camera_id > -1:
                 self.viewer.cam.type = const.CAMERA_FIXED
                 self.viewer.cam.fixedcamid = camera_id
+        else:
+            self.viewer = None
 
         print("MuJoCo session created")
 
     def disconnect(self):
         """Stop and reset the simulation."""
-        glfw.destroy_window(self.viewer.window)
+        if self.viewer:
+            glfw.destroy_window(self.viewer.window)
+            del self.viewer
         self.sim.reset()
-        del self.viewer
         del self.sim
         print("MuJoCO session closed...")
 

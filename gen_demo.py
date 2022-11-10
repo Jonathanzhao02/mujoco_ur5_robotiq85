@@ -102,7 +102,7 @@ def create_verifier(interface, selection):
                     obj1 = bytes.decode(objs[idx])
                     obj2 = bytes.decode(objs[sim_idx])
 
-                    objective = f['objectives']['0']
+                    objective = f['objectives']['0']['targets']
 
                     if objective.attrs['obj1'] == obj1 and objective.attrs['obj2'] == obj2:
                         if sim < 0.08:

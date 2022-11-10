@@ -110,7 +110,7 @@ class Recorder():
     def close(self):
         try:
             self._f.attrs['final_timestep'] = self.cnt
-            self._f.attrs['success'] = self.verify() and self.cnt < self.max_timesteps
+            self._f.attrs['success'] = self.verify(self) and self.cnt < self.max_timesteps
         except:
             pass
         

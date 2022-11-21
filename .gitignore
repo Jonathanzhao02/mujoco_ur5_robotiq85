@@ -1,0 +1,5 @@
+*.stl
+__pycache__
+data
+demos
+

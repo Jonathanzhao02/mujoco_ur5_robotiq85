@@ -11,7 +11,7 @@ from torchvision import transforms
 from models.basic_model import Backbone
 
 class Sampler():
-    def __init__(self, controller, iters=50, dof=7, sentence=None, width=224, height=224, max_timesteps=800, verifier=lambda x: True):
+    def __init__(self, controller, ckpt=None, iters=50, dof=7, sentence=None, width=224, height=224, max_timesteps=800, verifier=lambda x: True):
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.controller = controller
         self.dof = dof
@@ -29,6 +29,9 @@ class Sampler():
 
         self.model = Backbone().to(self.device)
         self.criterion = nn.BCEWithLogitsLoss()
+
+        if ckpt is not None:
+            self.model.load_state_dict(torch.load(ckpt)['model'], strict=True)
         
     def set_verifier(self, verifier):
         self.verify = verifier
@@ -93,22 +96,12 @@ class Sampler():
             )
             u[-1] = gripper + dgrip
             interface.send_forces(u, update_display=True)
-            print(prog)
 
             self.cnt += 1
+            return prog
         else:
-            self.success = False
-            raise RuntimeError(f'Exceeded max time {self.max_timesteps}')
+            self.success = self.verify(self) and self.cnt < self.max_timesteps
+            return -1
         
     def write_objective(self, sentence):
         self.sentence = clip.tokenize(sentence).to(self.device)
-    
-    def __enter__(self):
-        return self
-
-    def close(self):
-        self.success = self.verify(self) and self.cnt < self.max_timesteps
-        return False
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()

@@ -139,12 +139,14 @@ if __name__ == '__main__':
     from abr_control.utils import transformations
     from my_mujoco_config import MujocoConfig as arm
     from record import Recorder
+    from sample import Sampler
     from parse_xml import parse_xml
     from pathlib import Path
     import argparse
 
     parser = argparse.ArgumentParser(description="Generate a single demonstration")
     parser.add_argument("idx", help="Index of demonstration", type=int)
+    parser.add_argument("ckpt", help="Path to model checkpoint", type=str)
 
     args = parser.parse_args()
 
@@ -199,7 +201,8 @@ if __name__ == '__main__':
         interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
         random_place(interface, objs)
 
-        recorder.set_verifier(create_verifier(interface, sel))
+        verifier = create_verifier(interface, sel)
+        recorder.set_verifier(verifier)
         
         # damp the movements of the arm
         damping = Damping(robot_config, kv=10)
@@ -214,27 +217,10 @@ if __name__ == '__main__':
             orientation_algorithm=1,
         )
 
-        e = Executor(interface, robot_config.START_ANGLES, -0.05)
+        sampler = Sampler(controller, ckpt=args.ckpt, sentence=sentence, verifier=verifier)
 
-        from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover, idle
-    
-        if sel[1] == 'mug':
-            place_dz = MUG_PLACE_DZ
-        elif sel[1] == 'plate':
-            place_dz = PLATE_PLACE_DZ
-        elif sel[1] == 'bowl':
-            place_dz = BOWL_PLACE_DZ
-
-        if sel[0] == 'mug':
-            mug_scale1 = gen_scales['mug_mesh']
-            mug_color1 = gen_colors['mug']
-            stack(e, interface, ctrlr, target_name='mug', container_name=sel[1], pickup_dz=MUG_PICKUP_DZ, pickup_dx=MUG_PICKUP_DX * mug_scale1[1], place_dz=place_dz, place_dx=MUG_PICKUP_DX * mug_scale1[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=True)
-        else:
-            bowl_scale1 = gen_scales['bowl_mesh']
-            bowl_color1 = gen_colors['bowl']
-            stack(e, interface, ctrlr, target_name='bowl', container_name=sel[1], pickup_dz=BOWL_PICKUP_DZ / bowl_scale1[1], pickup_dx=BOWL_PICKUP_DX * bowl_scale1[1], place_dz=place_dz, place_dx=BOWL_PICKUP_DX * bowl_scale1[1], theta=0, rot_time=0, grip_time=100, grip_force=0.12, terminator=True)
-
-        e.execute()
+        while True:
+            sampler.sample(interface)
     finally:
         if recorder is not None:
             recorder.close()

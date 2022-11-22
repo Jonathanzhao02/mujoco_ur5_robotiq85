@@ -184,8 +184,8 @@ if __name__ == '__main__':
                 'size': {obj: gen_sizes[obj] if obj in gen_sizes.keys() else None for obj in objs},
                 'scale': {obj: gen_scales[obj + '_mesh'] if obj + '_mesh' in gen_scales.keys() else None for obj in objs}
             },
-            f'demos/demo{i}.data',
-            f'demos/demo{i}_imgs',
+            f'demos_sampled/demo{i}.data',
+            f'demos_sampled/demo{i}_imgs',
             objective={
                 'action': 'stack',
                 'targets': {

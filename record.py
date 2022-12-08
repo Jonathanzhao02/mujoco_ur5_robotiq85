@@ -42,6 +42,7 @@ class Recorder():
             self.dq_data = self._f.create_dataset('dq', shape=(max_timesteps, dof), dtype='<f4')
             self.pos_data = self._f.create_dataset('pos', shape=(max_timesteps, len(self.obj_names), 3), dtype='<f4')
             self.rot_data = self._f.create_dataset('rot', shape=(max_timesteps, len(self.obj_names), 3), dtype='<f4')
+            self.force_data = self._f.create_dataset('u', shape=(max_timesteps, dof), dtype='<f4')
             self._f.attrs['success'] = True
 
             self.cnt = 0
@@ -75,6 +76,7 @@ class Recorder():
                 rot[i] = transformations.euler_from_quaternion(interface.get_orientation(self.obj_names[i]), "rxyz")
             self.pos_data[self.cnt] = pos
             self.rot_data[self.cnt] = rot
+            self.force_data[self.cnt] = interface.u
 
             self.cnt += 1
         else:

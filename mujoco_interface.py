@@ -52,6 +52,9 @@ class Mujoco(Interface):
         # should take this interface as an argument
         self.on_step = on_step
 
+        # records last forces sent to simulation
+        self.u = None
+
     def connect(self, joint_names=None, camera_id=-1, **kwargs):
         """
         joint_names: list, optional (Default: None)
@@ -236,6 +239,7 @@ class Mujoco(Interface):
         # NOTE: assuming that the robot arm motors are the first len(u) values
         # print('sim.data.ctrl shape vs u (from osc) shape', self.sim.data.ctrl.shape, u.shape)
         self.sim.data.ctrl[:] = u[:]
+        self.u = u.copy()
 
         # move simulation ahead one time step
         self.sim.step()

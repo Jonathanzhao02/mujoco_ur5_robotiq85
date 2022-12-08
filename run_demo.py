@@ -176,7 +176,7 @@ if __name__ == '__main__':
     recorder = None
     interface = None
 
-    sentence = f'stack the {gen_scales[sel[0] + '_mesh']} {gen_colors[sel[0]]} {sel[0]} on the {gen_scales[sel[1] + '_mesh']} {gen_colors[sel[1]]} {sel[1]}'
+    sentence = f'stack the {gen_scales[sel[0] + "_mesh"][0]} {gen_colors[sel[0]][0]} {sel[0]} on the {gen_scales[sel[1] + "_mesh"][0]} {gen_colors[sel[1]][0]} {sel[1]}'
 
     try:
         recorder = Recorder(objs, {
@@ -217,7 +217,7 @@ if __name__ == '__main__':
             orientation_algorithm=1,
         )
 
-        sampler = Sampler(controller, ckpt=args.ckpt, sentence=sentence, verifier=verifier)
+        sampler = Sampler(ctrlr, interface, robot_config.START_ANGLES, ckpt=args.ckpt, sentence=sentence)
 
         while True:
             sampler.sample(interface)

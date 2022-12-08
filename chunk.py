@@ -4,7 +4,7 @@ from pathlib import Path
 if __name__ == '__main__':
     valid = 0
 
-    for i in range(1,11):
+    for i in range(1,41):
         top_dir = Path(f'chunked/demos{i}')
         top_dir.mkdir(parents=True, exist_ok=True)
 

@@ -139,7 +139,7 @@ if __name__ == '__main__':
     from abr_control.utils import transformations
     from my_mujoco_config import MujocoConfig as arm
     from record import Recorder
-    from sample import Sampler
+    from sample import Sampler, ModelV0
     from parse_xml import parse_xml
     from pathlib import Path
     import argparse
@@ -217,7 +217,8 @@ if __name__ == '__main__':
             orientation_algorithm=1,
         )
 
-        sampler = Sampler(ctrlr, interface, robot_config.START_ANGLES, ckpt=args.ckpt, sentence=sentence)
+        model = ModelV0(args.ckpt, iters=200)
+        sampler = Sampler(ctrlr, interface, robot_config.START_ANGLES, model, sentence=sentence, dt=8)
 
         while True:
             sampler.sample(interface)

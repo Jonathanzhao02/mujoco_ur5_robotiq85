@@ -145,6 +145,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Generate a single demonstration")
     parser.add_argument("idx", help="Index of demonstration", type=int)
+    parser.add_argument("out", help="Output demo folder path", type=str)
 
     args = parser.parse_args()
 
@@ -180,8 +181,8 @@ if __name__ == '__main__':
                 'size': {obj: gen_sizes[obj] if obj in gen_sizes.keys() else None for obj in objs},
                 'scale': {obj: gen_scales[obj + '_mesh'] if obj + '_mesh' in gen_scales.keys() else None for obj in objs}
             },
-            f'demos/demo{i}.data',
-            f'demos/demo{i}_imgs',
+            Path(args.out).joinpath(f'demo{i}.data'),
+            Path(args.out).joinpath(f'demo{i}_imgs'),
             objective={
                 'action': 'stack',
                 'targets': {

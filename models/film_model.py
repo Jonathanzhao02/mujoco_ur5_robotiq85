@@ -191,26 +191,34 @@ class Interp1d(torch.autograd.Function):
 
 
 class Backbone(nn.Module):
-    def __init__(self, img_size, embedding_size=256, num_traces_in=7, num_traces_out=10, num_weight_points=91, input_nc=3, device=torch.device('cuda')):
+    def __init__(self, action_size=100, img_size=224, embedding_size=256, intermediate_size=256):
         super(Backbone, self).__init__()
-
-        self.device = device
-        self.num_traces_in = num_traces_in
-        self.num_traces_out = num_traces_out
-        self.num_weight_points = num_weight_points
         self.embedding_size = embedding_size
 
+        # Action Pathway
+        self.action_encoder = nn.Linear(action_size, embedding_size)
+
         # Visual Pathway
-        self.visual_encoder = resnet18(embedding_size, embedding_size)
+        self.visual_encoder = resnet18(embedding_size)
         self.visual_narrower = nn.Linear(512, embedding_size)
 
         # Task Pathway
-        self.task_id_encoder, _ = clip.load("ViT-B/32", self.device)
+        self.task_id_encoder, _ = clip.load("ViT-B/32")
         self.task_id_embedding_narrower = nn.Linear(512, embedding_size)
 
-    def _img_pathway_(self, img, task_embed):
+        self.discriminator = nn.Sequential(
+            nn.Linear(embedding_size * 3, intermediate_size),
+            nn.ReLU(),
+            nn.Linear(intermediate_size, 1),
+        )
+    
+    def _action_pathway_(self, action):
+        action_embedding = self.action_encoder(action)
+        return action_embedding
+
+    def _img_pathway_(self, img, action_embed):
         # Comprehensive Visual Encoder. img_embedding is the square token list
-        img_embedding = self.visual_encoder(img, task_embed).squeeze()
+        img_embedding = self.visual_encoder(img, action_embed).squeeze()
         img_embedding = self.visual_narrower(img_embedding)
         img_embedding = F.relu(img_embedding)
         return img_embedding
@@ -222,12 +230,20 @@ class Backbone(nn.Module):
         task_embedding = self.task_id_embedding_narrower(task_embedding)
         return task_embedding
 
-    def forward(self, img, sentence, actions):
+    def forward(self, img, sentence, action):
+        action = torch.flatten(action, start_dim=1)
+        # Convert channels-first to channels-last
+        img = img.permute(0, 2, 3, 1)
+
+        # Action Pathway
+        action_embed = self._action_pathway_(action)
+
+        # Image Pathway
+        img_embed = self._img_pathway_(img, action_embed)
 
         # Task Pathway
         task_embed = self._task_id_pathway_(sentence)
 
-        # Image Pathway
-        img_embed = self._img_pathway_(img, task_embed)
+        x = torch.cat((action_embed, img_embed, task_embed), dim=-1)
 
-        return 1
+        return self.discriminator(x)

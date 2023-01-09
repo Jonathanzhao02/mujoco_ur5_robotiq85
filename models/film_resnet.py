@@ -113,9 +113,8 @@ class BasicBlock(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, layers, lstm_size, emb_size, num_layers=18):
+    def __init__(self, block, layers, emb_size, num_layers=18):
         self.inplanes = 64
-        self.lstm_size = lstm_size
         self.emb_size = emb_size
         self.accu_layers = copy.deepcopy(layers)
         for i in range(1, len(layers)):
@@ -196,56 +195,56 @@ class ResNet(nn.Module):
         return x
 
 
-def resnet18(lstm_size, emb_size, pretrained=False, **kwargs):
+def resnet18(emb_size, pretrained=False, **kwargs):
     """Constructs a ResNet-18 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(BasicBlock, [2, 2, 2, 2], lstm_size, emb_size, **kwargs)
+    model = ResNet(BasicBlock, [2, 2, 2, 2], emb_size, **kwargs)
     if pretrained:
         model.load_state_dict(model_zoo.load_url(model_urls['resnet18']), strict=False)
     return model
 
 
-def resnet34(lstm_size, emb_size, pretrained=False, **kwargs):
+def resnet34(emb_size, pretrained=False, **kwargs):
     """Constructs a ResNet-34 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(BasicBlock, [3, 4, 6, 3], lstm_size, emb_size,**kwargs)
+    model = ResNet(BasicBlock, [3, 4, 6, 3], emb_size,**kwargs)
     if pretrained:
         model.load_state_dict(model_zoo.load_url(model_urls['resnet34']), strict=False)
     return model
 
 
-# def resnet50(lstm_size, emb_size, pretrained=False, **kwargs):
+# def resnet50(emb_size, pretrained=False, **kwargs):
 #     """Constructs a ResNet-50 model.
 #     Args:
 #         pretrained (bool): If True, returns a model pre-trained on ImageNet
 #     """
-#     model = ResNet(Bottleneck, [3, 4, 6, 3], lstm_size, emb_size, **kwargs)
+#     model = ResNet(Bottleneck, [3, 4, 6, 3], emb_size, **kwargs)
 #     if pretrained:
 #         model.load_state_dict(model_zoo.load_url(model_urls['resnet50']), strict=False)
 #     return model
 
 
-# def resnet101(lstm_size, emb_size, pretrained=False, **kwargs):
+# def resnet101(emb_size, pretrained=False, **kwargs):
 #     """Constructs a ResNet-101 model.
 #     Args:
 #         pretrained (bool): If True, returns a model pre-trained on ImageNet
 #     """
-#     model = ResNet(Bottleneck, [3, 4, 23, 3], lstm_size, emb_size, **kwargs)
+#     model = ResNet(Bottleneck, [3, 4, 23, 3], emb_size, **kwargs)
 #     if pretrained:
 #         model.load_state_dict(model_zoo.load_url(model_urls['resnet101']), strict=False)
 #     return model
 
 
-# def resnet152(lstm_size, emb_size, pretrained=False, **kwargs):
+# def resnet152(emb_size, pretrained=False, **kwargs):
 #     """Constructs a ResNet-152 model.
 #     Args:
 #         pretrained (bool): If True, returns a model pre-trained on ImageNet
 #     """
-#     model = ResNet(Bottleneck, [3, 8, 36, 3], lstm_size, emb_size, **kwargs)
+#     model = ResNet(Bottleneck, [3, 8, 36, 3], emb_size, **kwargs)
 #     if pretrained:
 #         model.load_state_dict(model_zoo.load_url(model_urls['resnet152']), strict=False)
 #     return model

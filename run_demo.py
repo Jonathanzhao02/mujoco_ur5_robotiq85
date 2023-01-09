@@ -139,7 +139,7 @@ if __name__ == '__main__':
     from abr_control.utils import transformations
     from my_mujoco_config import MujocoConfig as arm
     from record import Recorder
-    from sample import Sampler, ModelV0
+    from sample import Sampler, ModelV0, ModelV1, TrajectorySampler, TrajectoryModelV0, Modes
     from parse_xml import parse_xml
     from pathlib import Path
     import argparse
@@ -147,6 +147,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate a single demonstration")
     parser.add_argument("idx", help="Index of demonstration", type=int)
     parser.add_argument("ckpt", help="Path to model checkpoint", type=str)
+    parser.add_argument("--collisions", help="Turn on/off robot collisions with table", action=argparse.BooleanOptionalAction, default=True)
 
     args = parser.parse_args()
 
@@ -166,11 +167,20 @@ if __name__ == '__main__':
     ]
 
     sel = random.choice(combos)
+
+    if args.collisions:
+        xml_template_path = 'my_models/ur5_robotiq85/ur5_tabletop_template_nocol.xml'
+        xml_path = 'my_models/ur5_robotiq85/ur5_tabletop_nocol.xml'
+        xml_name = 'ur5_tabletop_nocol.xml'
+    else:
+        xml_template_path = 'my_models/ur5_robotiq85/ur5_tabletop_template.xml'
+        xml_path = 'my_models/ur5_robotiq85/ur5_tabletop.xml'
+        xml_name = 'ur5_tabletop.xml'
     
     gen_colors, gen_sizes, gen_scales = parse_xml(
-        Path('my_models/ur5_robotiq85/ur5_tabletop_template.xml'),
+        Path(xml_template_path),
         '__template',
-        Path('my_models/ur5_robotiq85/ur5_tabletop.xml')
+        Path(xml_path)
     )
 
     recorder = None
@@ -196,7 +206,7 @@ if __name__ == '__main__':
             max_timesteps=400,
         )
         # create our Mujoco interface
-        robot_config = arm('ur5_tabletop.xml', folder='./my_models/ur5_robotiq85')
+        robot_config = arm(xml_name, folder='./my_models/ur5_robotiq85')
         interface = Mujoco(robot_config, dt=0.008, on_step=SamplingRecorder(recorder, 2))
         interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
         random_place(interface, objs)
@@ -217,8 +227,11 @@ if __name__ == '__main__':
             orientation_algorithm=1,
         )
 
-        model = ModelV0(args.ckpt, iters=200)
-        sampler = Sampler(ctrlr, interface, robot_config.START_ANGLES, model, sentence=sentence, dt=8)
+        # model = ModelV1(args.ckpt, iters=200)
+        # sampler = Sampler(ctrlr, interface, robot_config.START_ANGLES, model, sentence=sentence, dt=8)
+
+        model = TrajectoryModelV0(args.ckpt, iters=200)
+        sampler = TrajectorySampler(ctrlr, interface, robot_config.START_ANGLES, model, sentence=sentence, mode=Modes.REL)
 
         while True:
             sampler.sample(interface)

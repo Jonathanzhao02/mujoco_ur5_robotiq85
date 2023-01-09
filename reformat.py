@@ -3,6 +3,8 @@ import math
 import random
 from pathlib import Path
 
+ROOT = '/data/Documents/localuser/jjzhao/demos'
+
 if __name__ == '__main__':
     valid = []
 
@@ -12,8 +14,8 @@ if __name__ == '__main__':
     train_dir.mkdir(parents=True, exist_ok=True)
     val_dir.mkdir(parents=True, exist_ok=True)
 
-    for i in range(1,8000 + 1):
-        with h5py.File(f'demos/demo{i}.data') as f:
+    for i in range(1,4000 + 1):
+        with h5py.File(f'{ROOT}/demo{i}.data') as f:
             if f.attrs['success']:
                 valid.append(i)
 
@@ -23,11 +25,11 @@ if __name__ == '__main__':
     for i in train:
         top_dir = train_dir.joinpath(f'demo{i}')
         top_dir.mkdir(parents=True, exist_ok=True)
-        top_dir.joinpath('states.data').symlink_to(Path('demos').joinpath(f'demo{i}.data').resolve())
-        top_dir.joinpath('imgs').symlink_to(Path('demos').joinpath(f'demo{i}_imgs').resolve())
+        top_dir.joinpath('states.data').symlink_to(Path(ROOT).joinpath(f'demo{i}.data').resolve())
+        top_dir.joinpath('imgs').symlink_to(Path(ROOT).joinpath(f'demo{i}_imgs').resolve())
 
     for i in val:
         top_dir = val_dir.joinpath(f'demo{i}')
         top_dir.mkdir(parents=True, exist_ok=True)
-        top_dir.joinpath('states.data').symlink_to(Path('demos').joinpath(f'demo{i}.data').resolve())
-        top_dir.joinpath('imgs').symlink_to(Path('demos').joinpath(f'demo{i}_imgs').resolve())
+        top_dir.joinpath('states.data').symlink_to(Path(ROOT).joinpath(f'demo{i}.data').resolve())
+        top_dir.joinpath('imgs').symlink_to(Path(ROOT).joinpath(f'demo{i}_imgs').resolve())

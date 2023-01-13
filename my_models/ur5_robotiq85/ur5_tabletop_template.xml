@@ -10,7 +10,7 @@
 <mujoco model="ur5">
     <compiler angle="radian" meshdir="meshes" balanceinertia="true" />
     <size nconmax="4000" njmax="5000" />
-    <option cone="elliptic" />
+    <option cone="elliptic" timestep="0.008" />
 
     <default>
         <light castshadow="false" diffuse="1 1 1" />

@@ -2,9 +2,9 @@ from environment.stack import StackEnv
 from gym.envs import registration
 from gym.spaces import Dict, Box, Text, Discrete
 
-from my_mujoco_confing import MujocoConfig
+from mujocomy_mujoco_config import MujocoConfig
 from abr_control.controllers import Damping
-from my_osc import OSC
+from mujocomy_osc import OSC
 
 class StackTrajectoryEnv(StackEnv):
     def __init__(self, **kwargs):

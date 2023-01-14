@@ -79,3 +79,16 @@ class ScaleTagReplacer(TagReplacer):
         if self.value is not None:
             scale = parent.get('scale')
             attr['scale'] = ' '.join([str.format('{scale:.5f}', scale=float(i) * self.value) for i in scale.split(' ')])
+
+class SizeTagReplacer(TagReplacer):
+    def __init__(self):
+        TagReplacer.__init__(
+            self,
+            '__rand_size',
+            gen_size,
+        )
+    
+    def modify_attr(self, attr, parent):
+        if self.value is not None:
+            size = parent.get('size')
+            attr['size'] = ' '.join([str.format('{size:.5f}', size=float(i) * self.value) for i in size.split(' ')])

@@ -1,4 +1,4 @@
-from sequential_actions_interface import *
+from mujoco.sequential_actions_interface import *
 from abr_control.utils import transformations
 import math
 

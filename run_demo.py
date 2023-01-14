@@ -132,15 +132,16 @@ if __name__ == '__main__':
     import mujoco_py
 
     import random
-    from sequential_actions_interface import *
+    from mujoco.sequential_actions_interface import *
     from abr_control.controllers import Damping
-    from my_osc import OSC
-    from mujoco_interface import Mujoco
+    from mujoco.my_osc import OSC
+    from mujoco.mujoco_interface import Mujoco
     from abr_control.utils import transformations
-    from my_mujoco_config import MujocoConfig as arm
+    from mujoco.my_mujoco_config import MujocoConfig as arm
     from record import Recorder
     from sample import Sampler, ModelV0, ModelV1, TrajectorySampler, TrajectoryModelV0, Modes
-    from parse_xml import parse_xml
+    from xml.parse_xml import parse_xml
+    from xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer, SizeTagReplacer
     from pathlib import Path
     import argparse
 
@@ -177,11 +178,20 @@ if __name__ == '__main__':
         xml_path = 'my_models/ur5_robotiq85/ur5_tabletop.xml'
         xml_name = 'ur5_tabletop.xml'
     
-    gen_colors, gen_sizes, gen_scales = parse_xml(
+    gen_tags = parse_xml(
         Path(xml_template_path),
         '__template',
-        Path(xml_path)
+        Path(xml_path),
+        {
+            'color': ColorTagReplacer(),
+            'scale': ScaleTagReplacer(),
+            'size': SizeTagReplacer(),
+        }
     )
+
+    gen_colors = gen_tags['color']
+    gen_scales = gen_tags['scale']
+    gen_sizes = gen_tags['size']
 
     recorder = None
     interface = None

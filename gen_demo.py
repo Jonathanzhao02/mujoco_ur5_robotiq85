@@ -69,7 +69,7 @@ def change_objective(recorder, action, targets):
         }
     return __func
 
-def create_verifier(interface, selection):
+def create_verifier():
     def _verify(recorder):
         f = recorder._f
         valid_demo = False
@@ -132,14 +132,15 @@ if __name__ == '__main__':
     import mujoco_py
 
     import random
-    from sequential_actions_interface import *
+    from mujoco.sequential_actions_interface import *
     from abr_control.controllers import Damping
-    from my_osc import OSC
-    from mujoco_interface import Mujoco
+    from mujocomy_osc import OSC
+    from mujocomujoco_interface import Mujoco
     from abr_control.utils import transformations
-    from my_mujoco_config import MujocoConfig as arm
+    from mujocomy_mujoco_config import MujocoConfig as arm
     from record import Recorder
-    from parse_xml import parse_xml
+    from xml.parse_xml import parse_xml
+    from xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer, SizeTagReplacer
     from pathlib import Path
     import argparse
 
@@ -166,11 +167,20 @@ if __name__ == '__main__':
 
     sel = random.choice(combos)
     
-    gen_colors, gen_sizes, gen_scales = parse_xml(
+    gen_tags = parse_xml(
         Path('my_models/ur5_robotiq85/ur5_tabletop_template.xml'),
         '__template',
-        Path('my_models/ur5_robotiq85/ur5_tabletop.xml')
+        Path('my_models/ur5_robotiq85/ur5_tabletop.xml'),
+        {
+            'color': ColorTagReplacer(),
+            'scale': ScaleTagReplacer(),
+            'size': SizeTagReplacer(),
+        }
     )
+
+    gen_colors = gen_tags['color']
+    gen_scales = gen_tags['scale']
+    gen_sizes = gen_tags['size']
 
     recorder = None
     interface = None
@@ -198,7 +208,7 @@ if __name__ == '__main__':
         interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
         random_place(interface, objs)
 
-        recorder.set_verifier(create_verifier(interface, sel))
+        recorder.set_verifier(create_verifier())
         
         # damp the movements of the arm
         damping = Damping(robot_config, kv=10)

@@ -5,8 +5,10 @@ from gym.spaces import Box, Text, Dict
 
 from utils.xml.parse_xml import parse_xml
 from utils.xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer
+from utils.mujoco.mujoco_interface import Mujoco
+from utils.mujoco.my_mujoco_config import MujocoConfig
 
-from mujoco_py.generated import const
+import mujoco as mj
 
 import numpy as np
 import random
@@ -131,7 +133,17 @@ class StackEnv(MujocoEnv):
             **kwargs
         )
 
+        # Define action space
         self.action_space = Box(low=-np.inf, high=np.inf, shape=(7,), dtype=np.float32)
+
+        # Interface creation
+        self.robot_config = MujocoConfig(self.model, self.data)
+        self.mujoco_interface = Mujoco(self.robot_config)
+        self.mujoco_interface.connect(['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'])
+
+        # Set starting angles
+        self.START_ANGLES = self.model.numeric("START_ANGLES").data
+        self.init_qpos[self.mujoco_interface.joint_pos_addrs] = self.START_ANGLES
     
     def step(self, a):
         reward = 1.0
@@ -153,9 +165,11 @@ class StackEnv(MujocoEnv):
         return self._get_obs()
 
     def _get_obs(self):
-        self._get_viewer('rgb_array').render(224,224,camera_id=0)
-        data = self._get_viewer('rgb_array').read_pixels(224, 224, depth=False)
-        image = data[::-1, :, :]
+        # self._get_viewer('rgb_array').render(224,224,camera_id=0)
+        # data = self._get_viewer('rgb_array').read_pixels(224, 224, depth=False)
+        # image = data[::-1, :, :]
+        self._get_viewer('human').render()
+        image = np.zeros((224, 224, 3))
 
         return {
             "image": image,
@@ -165,7 +179,7 @@ class StackEnv(MujocoEnv):
     def viewer_setup(self):
         assert self.viewer is not None
         v = self.viewer
-        v.cam.type = const.CAMERA_FIXED
+        v.cam.type = mj.mjtCamera.mjCAMERA_FIXED
         v.cam.fixedcamid = 0
 
 registration.register(id='Stack-v0', entry_point=StackEnv)

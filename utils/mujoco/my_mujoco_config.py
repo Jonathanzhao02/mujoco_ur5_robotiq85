@@ -12,7 +12,7 @@ class MujocoConfig:
     dynamics calculations necessary for controllers.
     """
 
-    def __init__(self, model, data, joint_pos_addrs, joint_vel_addrs, joint_dyn_addrs):
+    def __init__(self, model, data):
         """
 
         Parameters
@@ -24,7 +24,9 @@ class MujocoConfig:
         """
         self.model = model
         self.data = data
+        self.N_GRIPPER_JOINTS = self.model.numeric("N_GRIPPER_JOINTS").data[0]
 
+    def connect(self, joint_pos_addrs, joint_vel_addrs, joint_dyn_addrs):
         self.joint_pos_addrs = np.copy(joint_pos_addrs)
         self.joint_vel_addrs = np.copy(joint_vel_addrs)
         self.joint_dyn_addrs = np.copy(joint_dyn_addrs)
@@ -59,36 +61,6 @@ class MujocoConfig:
         self._R = np.zeros((3, 3))
         self._x = np.ones(4)
         self.N_ALL_JOINTS = N_ALL_JOINTS
-
-    def _load_state(self, q, dq=None, u=None):
-        """Change the current joint angles
-
-        Parameters
-        ----------
-        q: np.array
-            The set of joint angles to move the arm to [rad]
-        dq: np.array
-            The set of joint velocities to move the arm to [rad/sec]
-        u: np.array
-            The set of joint forces to apply to the arm joints [Nm]
-        """
-        # save current state
-        old_q = np.copy(self.data.qpos[self.joint_pos_addrs])
-        old_dq = np.copy(self.data.qvel[self.joint_vel_addrs])
-        old_u = np.copy(self.data.ctrl)
-
-        # update positions to specified state
-        self.data.qpos[self.joint_pos_addrs] = np.copy(q)
-        if dq is not None:
-            self.data.qvel[self.joint_vel_addrs] = np.copy(dq)
-        if u is not None:
-            self.data.ctrl[:] = np.copy(u)
-
-        # move simulation forward to calculate new kinematic information
-        self.sim.forward()
-        # WILL ERROR
-
-        return old_q, old_dq, old_u
 
     def g(self, q=None):
         """Returns qfrc_bias variable, which stores the effects of Coriolis,

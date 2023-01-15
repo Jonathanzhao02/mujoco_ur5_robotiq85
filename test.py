@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 
 import random
 
-env = gym.make('StackTrajectory-v0', render_mode='rgb_array')
+env = gym.make('StackTrajectory-v0', render_mode='human')
 env.reset()
 
 for _ in range(800):
-    obs, _, _, _ = env.step([random.random() * 3 for _ in range(7)])
+    obs, _, _, _ = env.step([0.3, 0.3, 0.3, -1.57, 0, -1.57, -0.12])
     print(obs['image'].sum())

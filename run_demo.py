@@ -135,7 +135,7 @@ if __name__ == '__main__':
     from utils.mujoco.sequential_actions_interface import *
     from abr_control.controllers import Damping
     from utils.mujoco.my_osc import OSC
-    from utils.mujoco.mujoco_interface import Mujoco
+    from utils.mujoco.mujocopy_interface import MujocoPy
     from abr_control.utils import transformations
     from utils.mujoco.my_mujocopy_config import MujocoPyConfig as arm
     from record import Recorder
@@ -217,7 +217,7 @@ if __name__ == '__main__':
         )
         # create our Mujoco interface
         robot_config = arm(xml_name, folder='./my_models/ur5_robotiq85')
-        interface = Mujoco(robot_config, dt=0.008, on_step=SamplingRecorder(recorder, 2))
+        interface = MujocoPy(robot_config, dt=0.008, on_step=SamplingRecorder(recorder, 2))
         interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
         random_place(interface, objs)
 

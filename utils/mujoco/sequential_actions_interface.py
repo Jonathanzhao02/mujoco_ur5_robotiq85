@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     from abr_control.controllers import Damping
     from my_osc import OSC
-    from mujoco_interface import Mujoco
+    from mujocopy_interface import MujocoPy
     from abr_control.utils import transformations
     from my_mujocopy_config import MujocoPyConfig as arm
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
 
     # create our Mujoco interface
     robot_config = arm('ur5.xml', folder='./my_models/ur5_robotiq85')
-    interface = Mujoco(robot_config, dt=0.008)
+    interface = MujocoPy(robot_config, dt=0.008)
     interface.connect(joint_names=['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'], camera_id=0)
 
     # Randomly place the target object

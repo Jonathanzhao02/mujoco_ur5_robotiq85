@@ -242,10 +242,12 @@ class OSC(Controller):
             target_velocity = self.ZEROS_SIX
 
         J = self.robot_config.J(ref_frame, q, x=xyz_offset)  # Jacobian
+        print(J.shape)
         # isolate rows of Jacobian corresponding to controlled task space DOF
         J = J[self.ctrlr_dof]
 
         M = self.robot_config.M(q)  # inertia matrix in joint space
+        print(M.shape)
         Mx, M_inv = self._Mx(M=M, J=J)  # inertia matrix in task space
 
         # calculate the desired task space forces -----------------------------

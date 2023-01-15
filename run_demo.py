@@ -132,16 +132,16 @@ if __name__ == '__main__':
     import mujoco_py
 
     import random
-    from mujoco.sequential_actions_interface import *
+    from utils.mujoco.sequential_actions_interface import *
     from abr_control.controllers import Damping
-    from mujoco.my_osc import OSC
-    from mujoco.mujoco_interface import Mujoco
+    from utils.mujoco.my_osc import OSC
+    from utils.mujoco.mujoco_interface import Mujoco
     from abr_control.utils import transformations
-    from mujoco.my_mujoco_config import MujocoConfig as arm
+    from utils.mujoco.my_mujocopy_config import MujocoPyConfig as arm
     from record import Recorder
     from sample import Sampler, ModelV0, ModelV1, TrajectorySampler, TrajectoryModelV0, Modes
-    from xml.parse_xml import parse_xml
-    from xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer, SizeTagReplacer
+    from utils.xml.parse_xml import parse_xml
+    from utils.xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer, SizeTagReplacer
     from pathlib import Path
     import argparse
 

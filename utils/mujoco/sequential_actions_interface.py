@@ -110,7 +110,7 @@ if __name__ == '__main__':
     from my_osc import OSC
     from mujoco_interface import Mujoco
     from abr_control.utils import transformations
-    from my_mujoco_config import MujocoConfig as arm
+    from my_mujocopy_config import MujocoPyConfig as arm
 
     def target_func(interface):
         target_xyz = interface.get_xyz("target2")

@@ -6,8 +6,7 @@ import numpy as np
 
 from abr_control.utils import download_meshes
 
-
-class MujocoConfig:
+class MujocoPyConfig:
     """A wrapper on the Mujoco simulator to generate all the kinematics and
     dynamics calculations necessary for controllers.
     """
@@ -56,7 +55,7 @@ class MujocoConfig:
             self.xml_dir = f"{folder}"
             self.xml_file = os.path.join(self.xml_dir, xml_file)
 
-        self.N_GRIPPEPR_JOINTS = 0
+        self.N_GRIPPER_JOINTS = 0
 
         # get access to some of our custom arm parameters from the xml definition
         tree = ElementTree.parse(self.xml_file)
@@ -297,7 +296,7 @@ class MujocoConfig:
             old_q, old_dq, old_u = self._load_state(q)
 
         # stored in mjData.qM, stored in custom sparse format,
-        # convert qM to a dense matrix with mj_fullM
+        # convert qM to a dense matrix with _mj_fullM
         mjp.cymj._mj_fullM(self.model, self._MNN_vector, self.sim.data.qM)
         M = self._MNN_vector[self.M_indices]
         M = M.reshape((self.N_JOINTS, self.N_JOINTS))
@@ -433,4 +432,5 @@ class MujocoConfig:
         """
         # TODO if ever required
         raise NotImplementedError
+
 

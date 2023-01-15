@@ -3,8 +3,8 @@ from gym.envs import registration
 from gym.envs.mujoco import MujocoEnv
 from gym.spaces import Box, Text, Dict
 
-from xml.parse_xml import parse_xml
-from xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer
+from utils.xml.parse_xml import parse_xml
+from utils.xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer
 
 from mujoco_py.generated import const
 

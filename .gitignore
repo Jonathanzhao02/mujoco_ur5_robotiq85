@@ -1,5 +1,5 @@
 *.stl
 __pycache__
-data
-demos
+/data
+/demos
 

@@ -138,7 +138,7 @@ if __name__ == '__main__':
     from utils.mujoco.mujocopy_interface import MujocoPy
     from abr_control.utils import transformations
     from utils.mujoco.my_mujocopy_config import MujocoPyConfig as arm
-    from record import Recorder
+    from utils.data.record import Recorder
     from utils.xml.parse_xml import parse_xml
     from utils.xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer, SizeTagReplacer
     from pathlib import Path
@@ -225,7 +225,7 @@ if __name__ == '__main__':
 
         e = Executor(interface, robot_config.START_ANGLES, -0.05)
 
-        from tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover, idle
+        from utils.mujoco.tasks import move, pick_up, push, place, rotate, rotate_place, stack, cover, idle
     
         if sel[1] == 'mug':
             place_dz = MUG_PLACE_DZ

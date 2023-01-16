@@ -163,11 +163,11 @@ class StackEnv(MujocoEnv):
         return self._get_obs()
 
     def _get_obs(self):
-        # self._get_viewer('rgb_array').render(224,224,camera_id=0)
-        # data = self._get_viewer('rgb_array').read_pixels(224, 224, depth=False)
-        # image = data[::-1, :, :]
-        self._get_viewer('human').render()
-        image = np.zeros((224, 224, 3))
+        self._get_viewer('rgb_array').render(224,224,camera_id=0)
+        data = self._get_viewer('rgb_array').read_pixels(224, 224, depth=False)
+        image = data[::-1, :, :]
+        # self._get_viewer('human').render()
+        # image = np.zeros((224, 224, 3))
 
         return {
             "image": image,

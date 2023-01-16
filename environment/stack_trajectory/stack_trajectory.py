@@ -1,4 +1,4 @@
-from environment.stack import StackEnv
+from environment.stack.stack import StackEnv
 from gym.envs import registration
 from gym.spaces import Dict, Box, Text, Discrete
 
@@ -12,7 +12,7 @@ class StackTrajectoryEnv(StackEnv):
         observation_space = Dict({
             "image": Box(low=0, high=255, shape=(224,224,3), dtype=np.uint8),
             "objective": Text(100),
-            "within_goal": Discrete(2), # 0 = no, 1 = yes
+            "dist_to_goal": Box(low=0, high=np.inf, dtype=np.float64),
         })
 
         StackEnv.__init__(self, observation_space=observation_space, **kwargs)
@@ -31,7 +31,7 @@ class StackTrajectoryEnv(StackEnv):
     
     def reset_model(self):
         ob = StackEnv.reset_model(self)
-        ob['within_goal'] = 0
+        ob['dist_to_goal'] = np.array(0, dtype=np.float64)
         return ob
     
     # Action: [x, y, z, roll, pitch, yaw, gripper force]
@@ -44,7 +44,7 @@ class StackTrajectoryEnv(StackEnv):
         )
         u[-1] = a[-1]
         ob, reward, terminated, _ = StackEnv.step(self, u)
-        ob['within_goal'] = np.linalg.norm(a[:3])
+        ob['dist_to_goal'] = np.array(np.linalg.norm(a[:3] - self.mujoco_interface.get_xyz('EE')))
         return ob, reward, terminated, {}
 
 registration.register(id='StackTrajectory-v0', entry_point=StackTrajectoryEnv)

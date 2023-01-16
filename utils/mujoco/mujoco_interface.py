@@ -117,3 +117,7 @@ class Mujoco(Interface):
             raise Exception(f"get_xyz for {object_type} object type not supported")
 
         return np.copy(xyz)
+    
+    def set_xyz(self, name, xyz, object_type="body"):
+        if object_type == "body":
+            self.data.body(name).qpos[:3] = xyz[:3]

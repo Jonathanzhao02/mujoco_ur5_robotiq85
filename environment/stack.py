@@ -27,9 +27,7 @@ obj_names = [
     'mug',
     'mug_2',
     'mug_3',
-][::-1]
-
-obj_idxes = {obj_names[i]: i for i in range(len(obj_names))}
+]
 
 combos = [
     ['bowl', 'plate'],
@@ -38,8 +36,9 @@ combos = [
     ['bowl', 'mug'],
 ]
 
-def random_place(qpos, objs):
+def random_place(model, qpos, objs):
     qpos = qpos.copy()
+    random.shuffle(objs)
 
     def l2(pos1, pos2):
         assert len(pos1) == len(pos2)
@@ -52,7 +51,6 @@ def random_place(qpos, objs):
     point_list = []
 
     for obj in objs:
-        i = obj_idxes[obj]
         tries = 0
 
         while tries < 100000:
@@ -64,8 +62,8 @@ def random_place(qpos, objs):
                     too_close = True
             if not too_close:
                 point_list.append((x, y))
-                qpos[-7 - i * 7] = x
-                qpos[-6 - i * 7] = y
+                qpos[model.joint(obj).qposadr] = x
+                qpos[model.joint(obj).qposadr + 1] = y
                 break
             tries += 1
 
@@ -155,7 +153,7 @@ class StackEnv(MujocoEnv):
 
     def reset_model(self):
         # Randomize object positions
-        qpos = random_place(self.init_qpos, [
+        qpos = random_place(self.model, self.init_qpos, [
             'bowl',
             'plate',
             'mug'

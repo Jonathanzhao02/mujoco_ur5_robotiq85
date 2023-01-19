@@ -3,6 +3,7 @@ from gym.envs import registration
 from gym.envs.mujoco import MujocoEnv
 from gym.spaces import Box, Text, Dict
 
+# from environment.stack.stack_metrics import AverageDistanceToPickup, AverageDistanceToGoal, AverageObjectDistanceToGoal, AverageSuccessMetric
 from utils.xml.parse_xml import parse_xml
 from utils.xml.tag_replacers import ColorTagReplacer, ScaleTagReplacer
 from utils.mujoco.mujoco_interface import Mujoco
@@ -14,6 +15,7 @@ import numpy as np
 import random
 import os
 from pathlib import Path
+# import gin
 
 obj_names = [
     'container',
@@ -72,6 +74,7 @@ def random_place(model, qpos, objs):
     
     return qpos
 
+# @gin.configurable
 class StackEnv(MujocoEnv):
     metadata = {
         "render_modes": [
@@ -84,14 +87,25 @@ class StackEnv(MujocoEnv):
         "render_fps": 125,
     }
 
-    def __init__(self, collisions=True, max_episode_steps=800, **kwargs):
+    # def get_metrics(self, num_episodes):
+    #     metrics = [
+    #         AverageDistanceToPickup(self, buffer_size=num_episodes),
+    #         AverageDistanceToGoal(self, buffer_size=num_episodes),
+    #         AverageObjectDistanceToGoal(self, buffer_size=num_episodes),
+    #         AverageSuccessMetric(self, buffer_size=num_episodes),
+    #     ]
+    #     succes_metric = metrics[-1]
+    #     return metrics, success_metric
+
+    # @gin.configurable
+    def __init__(self, collisions=True, max_episode_steps=800, goal_distance=0.08, **kwargs):
         if not collisions:
-            xml_template_path = 'my_models/ur5_robotiq85/ur5_tabletop_template_nocol.xml'
-            xml_path = 'my_models/ur5_robotiq85/ur5_tabletop_nocol.xml'
+            self.xml_template_path = 'my_models/ur5_robotiq85/ur5_tabletop_template_nocol.xml'
+            self.xml_path = 'my_models/ur5_robotiq85/ur5_tabletop_nocol.xml'
             self.xml_name = 'ur5_tabletop_nocol.xml'
         else:
-            xml_template_path = 'my_models/ur5_robotiq85/ur5_tabletop_template.xml'
-            xml_path = 'my_models/ur5_robotiq85/ur5_tabletop.xml'
+            self.xml_template_path = 'my_models/ur5_robotiq85/ur5_tabletop_template.xml'
+            self.xml_path = 'my_models/ur5_robotiq85/ur5_tabletop.xml'
             self.xml_name = 'ur5_tabletop.xml'
 
         if 'observation_space' not in kwargs:
@@ -100,33 +114,13 @@ class StackEnv(MujocoEnv):
                 "objective": Text(100),
             })
 
-        # Randomize object attributes
-        gen_tags = parse_xml(
-            Path(os.getcwd()).joinpath(xml_template_path),
-            '__template',
-            Path(os.getcwd()).joinpath(xml_path),
-            {
-                'color': ColorTagReplacer(),
-                'scale': ScaleTagReplacer(),
-            }
-        )
-        gen_colors = gen_tags['color']
-        gen_scales = gen_tags['scale']
-
-        # Randomize selected objects for objective
-        sel = random.choice(combos)
-
-        # NOTE!!! Atribute randomization can only happen during initialization due to limitations of using an XML file to define Mujoco
-
-        self.objective = f'stack the {gen_scales[sel[0] + "_mesh"][0]} {gen_colors[sel[0]][0]} {sel[0]} on the {gen_scales[sel[1] + "_mesh"][0]} {gen_colors[sel[1]][0]} {sel[1]}'
-        self.colors = gen_colors
-        self.scales = gen_scales
+        self.goal_distance = goal_distance
         self.max_episode_steps = max_episode_steps
         self.steps = 0
 
         MujocoEnv.__init__(
             self,
-            str(Path(os.getcwd()).joinpath(xml_path)),
+            str(Path(os.getcwd()).joinpath(self.xml_path)),
             1,
             **kwargs
         )
@@ -144,14 +138,48 @@ class StackEnv(MujocoEnv):
         self.init_qpos[self.mujoco_interface.joint_pos_addrs] = self.START_ANGLES
     
     def step(self, a):
-        reward = 1.0
         self.do_simulation(a, self.frame_skip)
         self.steps += 1
         ob = self._get_obs()
+        reward = self._get_reward()
         terminated = self.steps > self.max_episode_steps
         return ob, reward, terminated, {}
 
     def reset_model(self):
+        # Randomize object attributes
+        gen_tags = parse_xml(
+            Path(os.getcwd()).joinpath(self.xml_template_path),
+            '__template',
+            Path(os.getcwd()).joinpath(self.xml_path),
+            {
+                'color': ColorTagReplacer(),
+                'scale': ScaleTagReplacer(),
+            }
+        )
+
+        self.colors = gen_tags['color']
+        self.scales = gen_tags['scale']
+
+        # Randomize selected objects for objective
+        self.selection = random.choice(combos)
+        self.objective = f'stack the {self.scales[self.selection[0] + "_mesh"][0]} {self.colors[self.selection[0]][0]} {self.selection[0]} on the {self.scales[self.selection[1] + "_mesh"][0]} {self.colors[self.selection[1]][0]} {self.selection[1]}'
+
+        # Reset metrics
+        self.min_dist_to_pickup = np.inf
+        self.min_dist_to_goal = np.inf
+        self.obj_dist_to_goal = np.inf
+
+        # Manual calls to reload model from XML and reset viewers
+        self.close()
+        self._initialize_simulation()
+        self.renderer.reset()
+        self.renderer.render_step()
+
+        # Interface recreation
+        self.robot_config = MujocoConfig(self.model, self.data)
+        self.mujoco_interface = Mujoco(self.robot_config)
+        self.mujoco_interface.connect(['joint0', 'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'finger_joint'])
+
         # Randomize object positions
         qpos = random_place(self.model, self.init_qpos, [
             'bowl',
@@ -173,6 +201,30 @@ class StackEnv(MujocoEnv):
             "image": image,
             "objective": self.objective,
         }
+    
+    def _get_reward(self):
+        self.min_dist_to_pickup = min(
+            self.min_dist_to_pickup,
+            self.dist(self.mujoco_interface.get_xyz(self.selection[0]))
+        )
+        self.min_dist_to_goal = min(
+            self.min_dist_to_goal,
+            self.dist(self.mujoco_interface.get_xyz(self.selection[1]))
+        )
+        self.obj_dist_to_goal = np.linalg.norm(
+            self.mujoco_interface.get_xyz(self.selection[0]) - self.mujoco_interface.get_xyz(self.selection[1]),
+        )
+        reward = 1 if self.obj_dist_to_goal < self.goal_distance else 0
+        reward = 1
+        return reward
+
+    def dist(self, goal):
+        dist = np.linalg.norm(goal - self.mujoco_interface.get_xyz('EE'))
+        return dist
+    
+    @property
+    def succeeded(self):
+        return self.obj_dist_to_goal < self.goal_distance
 
     def viewer_setup(self):
         assert self.viewer is not None

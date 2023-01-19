@@ -16,22 +16,23 @@ class StackTrajectoryEnv(StackEnv):
         })
 
         StackEnv.__init__(self, observation_space=observation_space, **kwargs)
+    
+    def reset_model(self):
+        ob = super().reset_model()
+        ob['dist_to_goal'] = np.array(0, dtype=np.float64)
 
-        damping = Damping(self.robot_config, kv=10)
-
+        # Controller creation
+        self.damping = Damping(self.robot_config, kv=10)
         self.controller = OSC(
             self.robot_config,
             kp=200,
-            null_controllers=[damping],
+            null_controllers=[self.damping],
             vmax=[0.5, 0.5],  # [m/s, rad/s]
             # control (x, y, z) out of [x, y, z, alpha, beta, gamma]
             ctrlr_dof=[True, True, True, True, True, True],
             orientation_algorithm=1,
         )
-    
-    def reset_model(self):
-        ob = StackEnv.reset_model(self)
-        ob['dist_to_goal'] = np.array(0, dtype=np.float64)
+
         return ob
     
     # Action: [x, y, z, roll, pitch, yaw, gripper force]
@@ -44,7 +45,7 @@ class StackTrajectoryEnv(StackEnv):
         )
         u[-1] = a[-1]
         ob, reward, terminated, _ = StackEnv.step(self, u)
-        ob['dist_to_goal'] = np.array(np.linalg.norm(a[:3] - self.mujoco_interface.get_xyz('EE')))
+        ob['dist_to_goal'] = np.array(self.dist(a[:3]))
         return ob, reward, terminated, {}
 
 registration.register(id='StackTrajectory-v0', entry_point=StackTrajectoryEnv)

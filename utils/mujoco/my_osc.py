@@ -89,8 +89,6 @@ class OSC(Controller):
         self.task_space_gains = np.array([self.kp] * 3 + [self.ko] * 3)
         self.lamb = self.task_space_gains / self.kv
 
-        print('self.n_ctrlr_dof, robot_config.N_JOINTS', self.n_ctrlr_dof, robot_config.N_JOINTS)
-
         try:
             if self.n_ctrlr_dof > robot_config.N_JOINTS:
                 print(
